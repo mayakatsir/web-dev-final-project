@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import type { Recipe } from '../types';
+import { formatCookingTime, formatDate } from '../utils/formatTimeUtils';
 
 interface Props {
   recipe: Recipe;
@@ -17,21 +18,6 @@ const difficultyColor: Record<Recipe['difficulty'], 'success' | 'warning' | 'err
   Medium: 'warning',
   Hard: 'error',
 };
-
-function formatCookingTime(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
 
 export default function RecipeCard({ recipe }: Props) {
   return (
