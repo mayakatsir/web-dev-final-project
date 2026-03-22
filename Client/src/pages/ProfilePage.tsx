@@ -44,7 +44,11 @@ export default function ProfilePage() {
           <Typography variant="body2" color="primary" fontWeight={500} gutterBottom>
             @{currentUser.username}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 480, mt: 0.5, mb: 0.5 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ maxWidth: 480, mt: 0.5, mb: 0.5 }}
+          >
             {currentUser.bio}
           </Typography>
           <Typography variant="caption" color="text.disabled">
@@ -70,13 +74,16 @@ export default function ProfilePage() {
                   <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
                     {stat.value}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" textTransform="uppercase" letterSpacing={0.5}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    textTransform="uppercase"
+                    letterSpacing={0.5}
+                  >
                     {stat.label}
                   </Typography>
                 </Box>
-                {i < arr.length - 1 && (
-                  <Divider orientation="vertical" flexItem />
-                )}
+                {i < arr.length - 1 && <Divider orientation="vertical" flexItem />}
               </Box>
             ))}
           </Box>
