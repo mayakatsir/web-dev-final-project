@@ -19,6 +19,7 @@ export default function ProfilePage() {
 
   const hasMore = visibleCount < userRecipes.length;
 
+  // TODO: reserch more pagination options
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
