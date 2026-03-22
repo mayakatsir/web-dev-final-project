@@ -2,10 +2,10 @@ import type { User, Recipe } from '../types';
 
 export const currentUser: User = {
   id: 'u1',
-  name: 'Sarah Mitchell',
-  username: 'sarahcooks',
-  bio: 'Home cook & food enthusiast. Sharing simple, delicious recipes from my kitchen to yours. 🍳',
-  avatarUrl: 'https://i.pravatar.cc/150?img=47',
+  name: 'Karen Itzhak',
+  username: 'karnicooks',
+  bio: 'my kitchen my rules',
+  avatarUrl: 'https://i.pravatar.cc/150?img=49',
   joinedDate: 'March 2024',
   followersCount: 1284,
   followingCount: 342,
