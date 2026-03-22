@@ -9,19 +9,21 @@ import PersonIcon from '@mui/icons-material/Person';
 import { currentUser } from '../data/mockData';
 
 export default function Navbar() {
+  const navItems = [
+    { path: '/', icon: <HomeIcon fontSize="small" />, label: 'Home' },
+    { path: '/profile', icon: <PersonIcon fontSize="small" />, label: 'Profile' },
+  ];  
+  
   return (
     <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
       <Toolbar sx={{ gap: 2 }}>
         <Typography variant="h6" fontWeight={700} color="primary" sx={{ flexGrow: 1, letterSpacing: -0.5 }}>
-          🍽 Recipy
+          EATing
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 0.5 }}>
-          {[
-            { to: '/', icon: <HomeIcon fontSize="small" />, label: 'Home' },
-            { to: '/profile', icon: <PersonIcon fontSize="small" />, label: 'Profile' },
-          ].map(({ to, icon, label }) => (
-            <NavLink key={to} to={to} end style={{ textDecoration: 'none' }}>
+          {navItems.map(({ path, icon, label }) => (
+            <NavLink key={path} to={path} end style={{ textDecoration: 'none' }}>
               {({ isActive }) => (
                 <Box
                   sx={{
