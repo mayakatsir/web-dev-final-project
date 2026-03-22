@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -8,7 +10,39 @@ import Typography from '@mui/material/Typography';
 import { currentUser, userRecipes } from '../data/mockData';
 import RecipeCard from '../components/RecipeCard';
 
+const PAGE_SIZE = 3;
+
 export default function ProfilePage() {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [loading, setLoading] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const hasMore = visibleCount < userRecipes.length;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setLoading(true);
+          // Simulate network delay
+          setTimeout(() => {
+            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, userRecipes.length));
+            setLoading(false);
+          }, 600);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading]);
+
+  const visibleRecipes = userRecipes.slice(0, visibleCount);
+
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       {/* Profile Header */}
@@ -103,12 +137,22 @@ export default function ProfilePage() {
         My Recipes
       </Typography>
       <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
-        {userRecipes.map((recipe) => (
-          <Grid key={recipe.id} size={{ xs: 12, sm: 6, md: 4 }}>
+        {visibleRecipes.map((recipe, i) => (
+          <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
             <RecipeCard recipe={recipe} />
           </Grid>
         ))}
       </Grid>
+
+      {/* Sentinel + loader */}
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        {loading && <CircularProgress size={28} />}
+        {!hasMore && !loading && (
+          <Typography variant="caption" color="text.disabled">
+            All recipes loaded
+          </Typography>
+        )}
+      </Box>
     </Container>
   );
 }
