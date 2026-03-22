@@ -1,1 +1,0 @@
-{"version":3,"file":"capitalize-eCJtuew8.js","names":[],"sources":["../../node_modules/@mui/material/esm/utils/capitalize.js"],"sourcesContent":["import capitalize from '@mui/utils/capitalize';\nexport default capitalize;"],"x_google_ignoreList":[0],"mappings":";;AACA,IAAA,qBAAe"}
