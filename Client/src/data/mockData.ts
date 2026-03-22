@@ -1,4 +1,4 @@
-import type { User, Recipe } from '../types';
+import type { User, Recipe, Comment } from '../types';
 
 export const currentUser: User = {
   id: 'u1',
@@ -405,5 +405,153 @@ export const userRecipes: Recipe[] = [
     imageUrl: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&h=300&fit=crop',
     likesCount: 729,
     postedAt: '2025-01-28',
+  },
+];
+
+export const otherUsers: User[] = [
+  {
+    id: 'u2',
+    name: 'Marco Rossi',
+    username: 'marcocooks',
+    bio: 'Italian food lover. Pasta is life.',
+    avatarUrl: 'https://i.pravatar.cc/150?img=11',
+    joinedDate: 'January 2024',
+    followersCount: 3200,
+    followingCount: 180,
+    recipesCount: 41,
+  },
+  {
+    id: 'u3',
+    name: 'Yuki Tanaka',
+    username: 'yukieats',
+    bio: 'Tokyo-based home chef. Ramen obsessed.',
+    avatarUrl: 'https://i.pravatar.cc/150?img=25',
+    joinedDate: 'June 2023',
+    followersCount: 8740,
+    followingCount: 510,
+    recipesCount: 88,
+  },
+  {
+    id: 'u4',
+    name: 'Amara Osei',
+    username: 'amaraflavors',
+    bio: 'West African flavors, modern kitchen.',
+    avatarUrl: 'https://i.pravatar.cc/150?img=32',
+    joinedDate: 'September 2024',
+    followersCount: 1100,
+    followingCount: 290,
+    recipesCount: 19,
+  },
+];
+
+export const feedRecipes: Recipe[] = [
+  {
+    id: 'f1',
+    authorId: 'u2',
+    title: 'Cacio e Pepe',
+    description:
+      'The Roman classic — just pasta, pecorino, and black pepper. Deceptively simple, endlessly satisfying.',
+    category: 'Pasta',
+    cookingTime: 20,
+    difficulty: 'Medium',
+    imageUrl: 'https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&h=400&fit=crop',
+    likesCount: 541,
+    postedAt: '2026-03-20',
+  },
+  {
+    id: 'f2',
+    authorId: 'u3',
+    title: 'Tonkotsu Ramen',
+    description:
+      'Rich, creamy pork bone broth simmered for 12 hours. Topped with chashu, soft egg, and nori.',
+    category: 'Asian',
+    cookingTime: 720,
+    difficulty: 'Hard',
+    imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&h=400&fit=crop',
+    likesCount: 1203,
+    postedAt: '2026-03-19',
+  },
+  {
+    id: 'f3',
+    authorId: 'u4',
+    title: 'Jollof Rice',
+    description:
+      'The ultimate West African one-pot rice dish cooked in a spiced tomato base. Party-worthy every time.',
+    category: 'Rice',
+    cookingTime: 60,
+    difficulty: 'Medium',
+    imageUrl: 'https://images.unsplash.com/photo-1674057813905-a32bde0b5d2c?w=600&h=400&fit=crop',
+    likesCount: 876,
+    postedAt: '2026-03-18',
+  },
+  {
+    id: 'f4',
+    authorId: 'u2',
+    title: 'Tiramisu',
+    description:
+      'Classic Italian no-bake dessert with espresso-soaked ladyfingers and a mascarpone cream. Make it a day ahead for best results.',
+    category: 'Dessert',
+    cookingTime: 30,
+    difficulty: 'Easy',
+    imageUrl: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&h=400&fit=crop',
+    likesCount: 994,
+    postedAt: '2026-03-17',
+  },
+  {
+    id: 'f5',
+    authorId: 'u3',
+    title: 'Tamagoyaki',
+    description:
+      'Japanese sweet rolled omelette — a bento staple. Light, fluffy layers with a hint of dashi and mirin.',
+    category: 'Breakfast',
+    cookingTime: 15,
+    difficulty: 'Medium',
+    imageUrl: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600&h=400&fit=crop',
+    likesCount: 432,
+    postedAt: '2026-03-16',
+  },
+  {
+    id: 'f6',
+    authorId: 'u4',
+    title: 'Suya Skewers',
+    description:
+      'Nigerian street-food grilled beef skewers rubbed in a spiced groundnut paste. Smoky, nutty, and addictive.',
+    category: 'Beef',
+    cookingTime: 35,
+    difficulty: 'Easy',
+    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&h=400&fit=crop',
+    likesCount: 663,
+    postedAt: '2026-03-15',
+  },
+];
+
+export const seedComments: Comment[] = [
+  {
+    id: 'c1',
+    recipeId: 'f1',
+    authorId: 'u3',
+    text: 'Made this last night — absolute perfection. The pepper really makes it!',
+    postedAt: '2026-03-20',
+  },
+  {
+    id: 'c2',
+    recipeId: 'f1',
+    authorId: 'u4',
+    text: 'I never knew pasta could be this good with so few ingredients.',
+    postedAt: '2026-03-20',
+  },
+  {
+    id: 'c3',
+    recipeId: 'f2',
+    authorId: 'u2',
+    text: 'Worth every minute of those 12 hours. My family was speechless.',
+    postedAt: '2026-03-19',
+  },
+  {
+    id: 'c4',
+    recipeId: 'f3',
+    authorId: 'u3',
+    text: 'Finally a jollof recipe that tastes like my grandma used to make!',
+    postedAt: '2026-03-18',
   },
 ];

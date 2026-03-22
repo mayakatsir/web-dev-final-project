@@ -22,3 +22,11 @@ export interface Recipe {
   likesCount: number;
   postedAt: string;
 }
+
+export interface Comment {
+  id: string;
+  recipeId: string;
+  authorId: string;
+  text: string;
+  postedAt: string;
+}
