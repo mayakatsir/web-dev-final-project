@@ -1,0 +1,134 @@
+@baseUrl = http://localhost:8080
+
+### Variables
+@postId = 69624b15206a5ed5ffa9a551
+@commentId = 1
+@userId = 6963fe227a5574c476f94bf5
+
+
+
+########POSTS###########
+###Create new post
+POST {{baseUrl}}/post
+Content-Type: application/json
+
+{
+  "title": "first post",
+  "content": "balaaaaa",
+  "sender": "{{userId}}"
+}
+
+###Get all posts
+GET {{baseUrl}}/post
+
+###Get post by id
+GET {{baseUrl}}/post/{{postId}}
+
+###Get posts by sender id
+GET {{baseUrl}}/post?sender={{userId}}
+
+###Update post by id
+PUT {{baseUrl}}/post/{{postId}}
+Content-Type: application/json
+
+{
+  "title": "updated title",
+  "content": "mayush",
+  "sender": "{{userId}}"
+}
+
+###Delete post by id
+DELETE {{baseUrl}}/post/{{postId}}  
+
+
+
+#######COMMENTS##########
+### Create a new comment
+POST {{baseUrl}}/comment
+Content-Type: application/json
+
+{
+  "postId": "{{postId}}",
+  "sender": "{{userId}}",
+  "content": "a comment"
+}
+
+### Get all comment
+GET {{baseUrl}}/comment
+
+### Get comment by id
+GET {{baseUrl}}/comment/{{commentId}}
+
+### Get comment for a specific post
+GET {{baseUrl}}/comment?postId={{postId}}
+
+### Update a comment
+PUT {{baseUrl}}/comment/{{commentId}}
+Content-Type: application/json
+
+{
+  "postId": "{{postId}}",
+  "sender": "{{userId}}",
+  "content": "another comment"
+}
+
+### Delete a comment
+DELETE {{baseUrl}}/comment/{{commentId}}
+
+########USERS##########
+### Get all users
+GET {{baseUrl}}/user
+
+### Get user by id
+GET {{baseUrl}}/user/{{userId}}
+
+### Update user by id
+PUT {{baseUrl}}/user/{{userId}}
+Content-Type: application/json
+
+{
+  "username": "karen_updated",
+  "email": "gmailupdate",
+  "password": "newpassword123"
+}
+
+### Delete user by id
+DELETE {{baseUrl}}/user/{{userId}}
+
+
+########AUTH##########
+### Register a new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "KAREN_ITSS",
+  "email": "karenitz@example.com",  
+  "password": "passsssword"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "KAREN_ITSS",
+  "password": "passsssword"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh-token 
+Content-Type: application/json
+
+{
+  "refreshToken": 
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTY0MjYxZWRjYzYyYWYxNmUzMjRkN2YiLCJpYXQiOjE3NjgxNzEwMzgsImV4cCI6MTc2ODE3MjAzOH0.FXrugt42amciUcH0kvwEvq-7hYnZkyBCsX0j1xwovN8"}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": 
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTY0MjYxZWRjYzYyYWYxNmUzMjRkN2YiLCJpYXQiOjE3NjgxNzEwMzgsImV4cCI6MTc2ODE3MjAzOH0.FXrugt42amciUcH0kvwEvq-7hYnZkyBCsX0j1xwovN8"
+}
