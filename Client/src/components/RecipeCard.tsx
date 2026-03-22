@@ -30,7 +30,7 @@ function formatDate(dateStr: string): string {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  });
+  })
 }
 
 export default function RecipeCard({ recipe }: Props) {
