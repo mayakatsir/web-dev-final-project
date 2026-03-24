@@ -69,6 +69,19 @@ async login (req: Request, res: Response) {
     }
 };
 
+async googleLogin (req: Request, res: Response) {
+    const credential = req.body.credential;
+
+    if (!credential) {
+        res.status(400).json({ message: '`credential` body param is missing' });
+
+        return;
+    }
+
+    const data = await signInWithGoogle(credential);
+    res.status(200).json(data);
+};
+
 async refreshToken (req: Request, res: Response) {
     try {
     const { refreshToken } = req.body;

@@ -7,6 +7,8 @@ userRouter.post("/register", authController.register);
 
 userRouter.post("/login", authController.login);
 
+userRouter.post("/google", authController.googleLogin);
+
 userRouter.post("/refresh-token", authController.refreshToken);
 
 userRouter.post("/logout", authController.logout);
