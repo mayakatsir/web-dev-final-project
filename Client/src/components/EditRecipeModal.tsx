@@ -42,7 +42,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Edit Recipe
+        {recipe.id === '' ? 'New Recipe' : 'Edit Recipe'}
         <IconButton size="small" onClick={onClose}>
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -101,7 +101,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
           disabled={!isValid}
           sx={{ textTransform: 'none', borderRadius: 2 }}
         >
-          Save changes
+          {recipe.id === '' ? 'Create' : 'Save changes'}
         </Button>
       </DialogActions>
     </Dialog>
