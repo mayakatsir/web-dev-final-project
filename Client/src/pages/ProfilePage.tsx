@@ -4,6 +4,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -20,6 +25,7 @@ export default function ProfilePage() {
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -51,6 +57,12 @@ export default function ProfilePage() {
 
   function handleSaveRecipe(id: string, updated: Pick<Recipe, 'title' | 'description' | 'imageUrl'>) {
     setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+  }
+
+  function handleDeleteRecipe() {
+    if (!deletingRecipe) return;
+    setRecipes((prev) => prev.filter((r) => r.id !== deletingRecipe.id));
+    setDeletingRecipe(null);
   }
 
   const visibleRecipes = recipes.slice(0, visibleCount);
@@ -152,7 +164,11 @@ export default function ProfilePage() {
       <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
         {visibleRecipes.map((recipe, i) => (
           <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
-            <RecipeCard recipe={recipe} onEdit={() => setEditingRecipe(recipe)} />
+            <RecipeCard
+              recipe={recipe}
+              onEdit={() => setEditingRecipe(recipe)}
+              onDelete={() => setDeletingRecipe(recipe)}
+            />
           </Grid>
         ))}
       </Grid>
@@ -180,6 +196,28 @@ export default function ProfilePage() {
         onClose={() => setEditingRecipe(null)}
         onSave={handleSaveRecipe}
       />
+
+      <Dialog open={deletingRecipe !== null} onClose={() => setDeletingRecipe(null)}>
+        <DialogTitle>Delete recipe?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <strong>{deletingRecipe?.title}</strong> will be permanently deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeletingRecipe(null)} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteRecipe}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
