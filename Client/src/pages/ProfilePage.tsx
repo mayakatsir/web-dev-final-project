@@ -7,12 +7,16 @@ import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import type { User } from '../types';
 import { currentUser, userRecipes } from '../data/mockData';
+import EditProfileModal from '../components/EditProfileModal';
 import RecipeCard from '../components/RecipeCard';
 
 const PAGE_SIZE = 3;
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<User>(currentUser);
+  const [editOpen, setEditOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -61,8 +65,8 @@ export default function ProfilePage() {
         }}
       >
         <Avatar
-          src={currentUser.avatarUrl}
-          alt={currentUser.name}
+          src={user.avatarUrl}
+          alt={user.name}
           sx={{
             width: 120,
             height: 120,
@@ -74,20 +78,20 @@ export default function ProfilePage() {
 
         <Box sx={{ flex: 1 }}>
           <Typography variant="h5" fontWeight={700} gutterBottom>
-            {currentUser.name}
+            {user.name}
           </Typography>
           <Typography variant="body2" color="primary" fontWeight={500} gutterBottom>
-            @{currentUser.username}
+            @{user.username}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ maxWidth: 480, mt: 0.5, mb: 0.5 }}
           >
-            {currentUser.bio}
+            {user.bio}
           </Typography>
           <Typography variant="caption" color="text.disabled">
-            Joined {currentUser.joinedDate}
+            Joined {user.joinedDate}
           </Typography>
 
           {/* Stats */}
@@ -100,9 +104,9 @@ export default function ProfilePage() {
             }}
           >
             {[
-              { value: currentUser.recipesCount, label: 'Recipes' },
-              { value: currentUser.followersCount.toLocaleString(), label: 'Followers' },
-              { value: currentUser.followingCount, label: 'Following' },
+              { value: user.recipesCount, label: 'Recipes' },
+              { value: user.followersCount.toLocaleString(), label: 'Followers' },
+              { value: user.followingCount, label: 'Following' },
             ].map((stat, i, arr) => (
               <Box key={stat.label} sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Box sx={{ textAlign: 'center' }}>
@@ -126,6 +130,7 @@ export default function ProfilePage() {
           <Button
             variant="outlined"
             size="small"
+            onClick={() => setEditOpen(true)}
             sx={{ mt: 2, textTransform: 'none', borderRadius: 2 }}
           >
             Edit Profile
@@ -154,6 +159,13 @@ export default function ProfilePage() {
           </Typography>
         )}
       </Box>
+
+      <EditProfileModal
+        open={editOpen}
+        user={user}
+        onClose={() => setEditOpen(false)}
+        onSave={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
+      />
     </Container>
   );
 }
