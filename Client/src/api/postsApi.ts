@@ -36,32 +36,23 @@ export async function fetchUserPosts(senderId: string): Promise<Recipe[]> {
   return (data.posts as ServerPost[]).map(toRecipe);
 }
 
-export async function createPost(
-  title: string,
-  description: string,
-  imageUrl: string,
-  senderId: string,
-): Promise<Recipe> {
+type PostFields = Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>;
+
+export async function createPost(fields: PostFields, senderId: string): Promise<Recipe> {
   const res = await fetch(`${BASE_URL}/post`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, description, imageUrl, sender: senderId }),
+    body: JSON.stringify({ ...fields, sender: senderId }),
   });
   const post: ServerPost = await res.json();
   return toRecipe(post);
 }
 
-export async function updatePost(
-  id: string,
-  title: string,
-  description: string,
-  imageUrl: string,
-  senderId: string,
-): Promise<void> {
+export async function updatePost(id: string, fields: PostFields, senderId: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, description, imageUrl, sender: senderId }),
+    body: JSON.stringify({ ...fields, sender: senderId }),
   });
 }
 

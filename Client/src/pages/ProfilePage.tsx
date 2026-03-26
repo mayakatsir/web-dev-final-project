@@ -80,18 +80,13 @@ export default function ProfilePage() {
 
   async function handleSaveRecipe(
     id: string,
-    updated: Pick<Recipe, 'title' | 'description' | 'imageUrl'>,
+    updated: Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>,
   ) {
     if (id === '') {
-      const newRecipe = await createPost(
-        updated.title,
-        updated.description,
-        updated.imageUrl,
-        currentUser.id,
-      );
+      const newRecipe = await createPost(updated, currentUser.id);
       setRecipes((prev) => [newRecipe, ...prev]);
     } else {
-      await updatePost(id, updated.title, updated.description, updated.imageUrl, currentUser.id);
+      await updatePost(id, updated, currentUser.id);
       setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
     }
   }
