@@ -9,7 +9,7 @@ import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const userMap = Object.fromEntries(otherUsers.map((u) => [u.id, u]));
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 6;
 
 export default function HomePage() {
   const [likes, setLikes] = useState<Set<string>>(new Set());

@@ -12,7 +12,7 @@ import { currentUser, userRecipes } from '../data/mockData';
 import EditProfileModal from '../components/EditProfileModal';
 import RecipeCard from '../components/RecipeCard';
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 9;
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User>(currentUser);
