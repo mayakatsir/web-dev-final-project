@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import type { Recipe } from '../types';
@@ -14,6 +15,7 @@ import { formatCookingTime, formatDate } from '../utils/formatTimeUtils';
 interface Props {
   recipe: Recipe;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const difficultyColor: Record<Recipe['difficulty'], 'success' | 'warning' | 'error'> = {
@@ -22,14 +24,14 @@ const difficultyColor: Record<Recipe['difficulty'], 'success' | 'warning' | 'err
   Hard: 'error',
 };
 
-export default function RecipeCard({ recipe, onEdit }: Props) {
+export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
   return (
     <Card
       sx={{
         borderRadius: 3,
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
-        '&:hover .edit-btn': { opacity: 1 },
+        '&:hover .card-actions': { opacity: 1 },
         cursor: 'pointer',
       }}
     >
@@ -53,24 +55,38 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
             fontSize: 11,
           }}
         />
-        {onEdit && (
-          <IconButton
-            className="edit-btn"
-            size="small"
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        {(onEdit || onDelete) && (
+          <Box
+            className="card-actions"
             sx={{
               position: 'absolute',
               top: 8,
               right: 8,
+              display: 'flex',
+              gap: 0.5,
               opacity: 0,
               transition: 'opacity 0.2s',
-              bgcolor: 'rgba(0,0,0,0.55)',
-              color: '#fff',
-              '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' },
             }}
           >
-            <EditIcon sx={{ fontSize: 15 }} />
-          </IconButton>
+            {onEdit && (
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                sx={{ bgcolor: 'rgba(0,0,0,0.55)', color: '#fff', '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' } }}
+              >
+                <EditIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            )}
+            {onDelete && (
+              <IconButton
+                size="small"
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                sx={{ bgcolor: 'rgba(0,0,0,0.55)', color: '#ff6b6b', '&:hover': { bgcolor: 'rgba(180,0,0,0.75)', color: '#fff' } }}
+              >
+                <DeleteIcon sx={{ fontSize: 15 }} />
+              </IconButton>
+            )}
+          </Box>
         )}
       </Box>
 
