@@ -5,40 +5,28 @@ const BASE_URL = 'http://localhost:8080';
 interface ServerPost {
   _id: string;
   title: string;
-  content: string;
+  description: string;
   sender: string;
-}
-
-// Store description + imageUrl together in the content field as JSON
-function encodeContent(description: string, imageUrl: string): string {
-  return JSON.stringify({ description, imageUrl });
-}
-
-function decodeContent(raw: string): { description: string; imageUrl: string } {
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === 'object') {
-      return { description: parsed.description ?? raw, imageUrl: parsed.imageUrl ?? '' };
-    }
-  } catch {
-    // plain string — treat as description
-  }
-  return { description: raw, imageUrl: '' };
+  category: string;
+  cookingTime: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  imageUrl: string;
+  likesCount: number;
+  postedAt: string;
 }
 
 function toRecipe(post: ServerPost): Recipe {
-  const { description, imageUrl } = decodeContent(post.content);
   return {
     id: post._id,
     authorId: post.sender,
     title: post.title,
-    description,
-    imageUrl,
-    category: 'General',
-    cookingTime: 30,
-    difficulty: 'Easy',
-    likesCount: 0,
-    postedAt: new Date().toISOString(),
+    description: post.description ?? '',
+    imageUrl: post.imageUrl ?? '',
+    category: post.category ?? 'General',
+    cookingTime: post.cookingTime ?? 30,
+    difficulty: post.difficulty ?? 'Easy',
+    likesCount: post.likesCount ?? 0,
+    postedAt: post.postedAt ?? new Date().toISOString(),
   };
 }
 
@@ -57,7 +45,7 @@ export async function createPost(
   const res = await fetch(`${BASE_URL}/post`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, content: encodeContent(description, imageUrl), sender: senderId }),
+    body: JSON.stringify({ title, description, imageUrl, sender: senderId }),
   });
   const post: ServerPost = await res.json();
   return toRecipe(post);
@@ -73,7 +61,7 @@ export async function updatePost(
   await fetch(`${BASE_URL}/post/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, content: encodeContent(description, imageUrl), sender: senderId }),
+    body: JSON.stringify({ title, description, imageUrl, sender: senderId }),
   });
 }
 
