@@ -7,21 +7,24 @@ import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import type { User } from '../types';
-import { currentUser, userRecipes } from '../data/mockData';
+import type { Recipe, User } from '../types';
+import { currentUser, userRecipes as initialRecipes } from '../data/mockData';
 import EditProfileModal from '../components/EditProfileModal';
+import EditRecipeModal from '../components/EditRecipeModal';
 import RecipeCard from '../components/RecipeCard';
 
 const PAGE_SIZE = 9;
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User>(currentUser);
+  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [editOpen, setEditOpen] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const hasMore = visibleCount < userRecipes.length;
+  const hasMore = visibleCount < recipes.length;
 
   // TODO: reserch more pagination options
   useEffect(() => {
@@ -34,7 +37,7 @@ export default function ProfilePage() {
           setLoading(true);
           // Simulate network delay
           setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, userRecipes.length));
+            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, recipes.length));
             setLoading(false);
           }, 600);
         }
@@ -44,9 +47,13 @@ export default function ProfilePage() {
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [hasMore, loading, recipes.length]);
 
-  const visibleRecipes = userRecipes.slice(0, visibleCount);
+  function handleSaveRecipe(id: string, updated: Pick<Recipe, 'title' | 'description' | 'imageUrl'>) {
+    setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+  }
+
+  const visibleRecipes = recipes.slice(0, visibleCount);
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -145,7 +152,7 @@ export default function ProfilePage() {
       <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
         {visibleRecipes.map((recipe, i) => (
           <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
-            <RecipeCard recipe={recipe} />
+            <RecipeCard recipe={recipe} onEdit={() => setEditingRecipe(recipe)} />
           </Grid>
         ))}
       </Grid>
@@ -165,6 +172,13 @@ export default function ProfilePage() {
         user={user}
         onClose={() => setEditOpen(false)}
         onSave={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
+      />
+
+      <EditRecipeModal
+        open={editingRecipe !== null}
+        recipe={editingRecipe}
+        onClose={() => setEditingRecipe(null)}
+        onSave={handleSaveRecipe}
       />
     </Container>
   );
