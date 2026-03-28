@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { SxProps, Theme } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -18,6 +19,51 @@ interface Props {
   onClose: () => void;
   onSave: (updated: Pick<User, 'name' | 'username' | 'bio' | 'avatarUrl'>) => void;
 }
+
+const styles = {
+  dialogTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    pb: 1,
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontWeight: 700,
+    fontSize: 20,
+  },
+  avatarSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    mb: 3,
+    mt: 1,
+  },
+  avatar: {
+    width: 96,
+    height: 96,
+    border: '3px solid',
+    borderColor: 'primary.light',
+    mb: 1,
+  },
+  fields: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  },
+  nameRow: {
+    display: 'flex',
+    gap: 2,
+  },
+  atPrefix: {
+    color: 'text.disabled',
+    mr: 0.5,
+    fontSize: 14,
+  },
+  dialogActions: {
+    px: 3,
+    py: 2,
+    gap: 1,
+  },
+} satisfies Record<string, SxProps<Theme>>;
 
 export default function EditProfileModal({ open, user, onClose, onSave }: Props) {
   const [name, setName] = useState(user.name);
@@ -43,17 +89,7 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          pb: 1,
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontWeight: 700,
-          fontSize: 20,
-        }}
-      >
+      <DialogTitle sx={styles.dialogTitle}>
         Edit Profile
         <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
           <CloseRoundedIcon fontSize="small" />
@@ -61,25 +97,14 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
       </DialogTitle>
 
       <DialogContent>
-        {/* Avatar preview */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3, mt: 1 }}>
-          <Avatar
-            src={avatarUrl}
-            alt={name}
-            sx={{
-              width: 96,
-              height: 96,
-              border: '3px solid',
-              borderColor: 'primary.light',
-              mb: 1,
-            }}
-          />
+        <Box sx={styles.avatarSection}>
+          <Avatar src={avatarUrl} alt={name} sx={styles.avatar} />
           <Typography variant="caption" color="text.disabled">
             Paste an image URL below to change your photo
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={styles.fields}>
           <TextField
             label="Avatar URL"
             value={avatarUrl}
@@ -88,7 +113,7 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
             fullWidth
             placeholder="https://…"
           />
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={styles.nameRow}>
             <TextField
               label="Name"
               value={name}
@@ -108,11 +133,7 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
               slotProps={{
                 htmlInput: { maxLength: 30 },
                 input: {
-                  startAdornment: (
-                    <Box component="span" sx={{ color: 'text.disabled', mr: 0.5, fontSize: 14 }}>
-                      @
-                    </Box>
-                  ),
+                  startAdornment: <Box component="span" sx={styles.atPrefix}>@</Box>,
                 },
               }}
             />
@@ -131,7 +152,7 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+      <DialogActions sx={styles.dialogActions}>
         <Button onClick={onClose} variant="outlined" color="inherit" sx={{ color: 'text.secondary' }}>
           Cancel
         </Button>

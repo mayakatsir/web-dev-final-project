@@ -11,9 +11,38 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Typography from '@mui/material/Typography';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { Comment } from '../types';
 import { currentUser } from '../data/mockData';
 import { createComment, fetchComments } from '../api/commentsApi';
+
+const styles = {
+  container: { py: 3, display: 'flex', flexDirection: 'column', minHeight: 'calc(100svh - 60px)' },
+  backButton: { alignSelf: 'flex-start', mb: 2, color: 'text.secondary', px: 1 },
+  heading: { mb: 2.5, fontSize: 18 },
+  loadingBox: { display: 'flex', justifyContent: 'center', py: 8, flex: 1 },
+  commentList: { flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 },
+  emptyBox: { textAlign: 'center', py: 6 },
+  commentRow: { display: 'flex', gap: 1.5, alignItems: 'flex-start' },
+  stickyInput: {
+    position: 'sticky',
+    bottom: 0,
+    bgcolor: 'background.paper',
+    pt: 1.5,
+    pb: 2,
+    borderTop: '1px solid',
+    borderColor: 'divider',
+    display: 'flex',
+    gap: 1.25,
+    alignItems: 'center',
+  },
+  outlinedInput: {
+    borderRadius: 50,
+    fontSize: 13.5,
+    bgcolor: 'grey.50',
+    '& fieldset': { borderColor: 'divider' },
+  },
+} satisfies Record<string, SxProps<Theme>>;
 
 export default function CommentsPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,36 +78,30 @@ export default function CommentsPage() {
   }
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{ py: 3, display: 'flex', flexDirection: 'column', minHeight: 'calc(100svh - 60px)' }}
-    >
+    <Container maxWidth="sm" sx={styles.container}>
       {/* Back */}
       <Button
         startIcon={<ArrowBackRoundedIcon />}
         onClick={() => navigate(-1)}
-        sx={{ alignSelf: 'flex-start', mb: 2, color: 'text.secondary', px: 1 }}
+        sx={styles.backButton}
       >
         Back
       </Button>
 
       {/* Header */}
-      <Typography
-        variant="h6"
-        sx={{ mb: 2.5, fontSize: 18 }}
-      >
+      <Typography variant="h6" sx={styles.heading}>
         {loading ? 'Comments' : `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}`}
       </Typography>
 
       {/* Comment list */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8, flex: 1 }}>
+        <Box sx={styles.loadingBox}>
           <CircularProgress size={28} sx={{ color: 'primary.main' }} />
         </Box>
       ) : (
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 }}>
+        <Box sx={styles.commentList}>
           {comments.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Box sx={styles.emptyBox}>
               <Typography sx={{ fontSize: 32, mb: 1 }}>💬</Typography>
               <Typography variant="body2" color="text.disabled">
                 No comments yet. Start the conversation!
@@ -89,7 +112,7 @@ export default function CommentsPage() {
           {comments.map((c) => {
             const isMe = c.authorId === currentUser.id;
             return (
-              <Box key={c.id} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+              <Box key={c.id} sx={styles.commentRow}>
                 <Avatar
                   src={
                     isMe
@@ -130,20 +153,7 @@ export default function CommentsPage() {
       )}
 
       {/* Sticky comment input */}
-      <Box
-        sx={{
-          position: 'sticky',
-          bottom: 0,
-          bgcolor: 'background.paper',
-          pt: 1.5,
-          pb: 2,
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          display: 'flex',
-          gap: 1.25,
-          alignItems: 'center',
-        }}
-      >
+      <Box sx={styles.stickyInput}>
         <Avatar
           src={currentUser.avatarUrl}
           alt={currentUser.name}
@@ -156,12 +166,7 @@ export default function CommentsPage() {
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-          sx={{
-            borderRadius: 50,
-            fontSize: 13.5,
-            bgcolor: 'grey.50',
-            '& fieldset': { borderColor: 'divider' },
-          }}
+          sx={styles.outlinedInput}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
