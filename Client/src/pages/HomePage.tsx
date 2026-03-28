@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import type { Comment } from '../types';
@@ -8,9 +9,37 @@ import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const userMap = Object.fromEntries(otherUsers.map((u) => [u.id, u]));
 
+const PAGE_SIZE = 6;
+
 export default function HomePage() {
   const [likes, setLikes] = useState<Set<string>>(new Set());
   const [comments, setComments] = useState<Comment[]>(seedComments);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [loading, setLoading] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const hasMore = visibleCount < feedRecipes.length;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setLoading(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, feedRecipes.length));
+            setLoading(false);
+          }, 600);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading]);
 
   function toggleLike(recipeId: string) {
     setLikes((prev) => {
@@ -37,7 +66,7 @@ export default function HomePage() {
         What's cooking today
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {feedRecipes.map((recipe) => (
+        {feedRecipes.slice(0, visibleCount).map((recipe) => (
           <RecipeFeedCard
             key={recipe.id}
             recipe={recipe}
@@ -48,6 +77,15 @@ export default function HomePage() {
             onAddComment={(text) => addComment(recipe.id, text)}
           />
         ))}
+      </Box>
+
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        {loading && <CircularProgress size={28} />}
+        {!hasMore && !loading && (
+          <Typography variant="caption" color="text.disabled">
+            You're all caught up
+          </Typography>
+        )}
       </Box>
     </Container>
   );
