@@ -1,31 +1,24 @@
-import { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Chip from '@mui/material/Chip';
-import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Typography from '@mui/material/Typography';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import SendIcon from '@mui/icons-material/Send';
-import type { Comment, Recipe, User } from '../types';
-import { currentUser } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
+import type { Recipe, User } from '../types';
 
 interface Props {
   recipe: Recipe;
   author: User;
-  comments: Comment[];
+  commentCount: number;
   liked: boolean;
   onLike: () => void;
-  onAddComment: (text: string) => void;
 }
 
 const difficultyColor: Record<Recipe['difficulty'], 'success' | 'warning' | 'error'> = {
@@ -49,23 +42,8 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-export default function RecipeFeedCard({
-  recipe,
-  author,
-  comments,
-  liked,
-  onLike,
-  onAddComment,
-}: Props) {
-  const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText] = useState('');
-
-  function handleSubmitComment() {
-    const trimmed = commentText.trim();
-    if (!trimmed) return;
-    onAddComment(trimmed);
-    setCommentText('');
-  }
+export default function RecipeFeedCard({ recipe, author, commentCount, liked, onLike }: Props) {
+  const navigate = useNavigate();
 
   return (
     <Card elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 3 }}>
@@ -141,83 +119,17 @@ export default function RecipeFeedCard({
           <Button
             size="small"
             startIcon={<ChatBubbleOutlineIcon />}
-            onClick={() => setShowComments((v) => !v)}
+            onClick={() => navigate(`/recipe/${recipe.id}`)}
             sx={{
               textTransform: 'none',
-              color: showComments ? 'primary.main' : 'text.secondary',
+              color: 'text.secondary',
               '&:hover': { bgcolor: 'action.hover' },
             }}
           >
-            {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+            {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
           </Button>
         </Box>
       </Box>
-
-      {/* Comments */}
-      <Collapse in={showComments}>
-        <Divider />
-        <Box sx={{ px: 2, pt: 1.5, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {comments.length === 0 && (
-            <Typography variant="caption" color="text.disabled">
-              No comments yet. Be the first!
-            </Typography>
-          )}
-          {comments.map((c) => (
-            <Box key={c.id} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-              <Avatar
-                src={`https://i.pravatar.cc/150?u=${c.authorId}`}
-                sx={{ width: 28, height: 28, mt: 0.25 }}
-              />
-              <Box
-                sx={{
-                  flex: 1,
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                  px: 1.5,
-                  py: 1,
-                }}
-              >
-                <Typography variant="caption" fontWeight={600} display="block">
-                  {c.authorId === currentUser.id ? currentUser.name : `@${c.authorId}`}
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: 13 }}>
-                  {c.text}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-
-          {/* Add comment */}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 0.5 }}>
-            <Avatar
-              src={currentUser.avatarUrl}
-              alt={currentUser.name}
-              sx={{ width: 28, height: 28 }}
-            />
-            <OutlinedInput
-              fullWidth
-              size="small"
-              placeholder="Add a comment…"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-              sx={{ borderRadius: 3, fontSize: 13 }}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={handleSubmitComment}
-                    disabled={!commentText.trim()}
-                    edge="end"
-                  >
-                    <SendIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </Box>
-        </Box>
-      </Collapse>
     </Card>
   );
 }
