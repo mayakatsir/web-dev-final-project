@@ -13,6 +13,7 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { Recipe, User } from '../types';
 import { currentUser } from '../data/mockData';
 import { createPost, deletePost, fetchUserPosts, updatePost } from '../api/postsApi';
@@ -36,6 +37,101 @@ const BLANK_RECIPE: Recipe = {
   commentsCount: 0,
   postedAt: '',
 };
+
+const styles = {
+  banner: {
+    height: { xs: 130, sm: 180 },
+    background: 'linear-gradient(135deg, #E8631A 0%, #F5A53B 55%, #E84040 100%)',
+    borderRadius: { xs: 0, sm: 3 },
+    mx: { xs: -3, sm: 0 },
+    mt: { xs: 0, sm: 3 },
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  decorCircle1: {
+    position: 'absolute',
+    top: -30,
+    right: 60,
+    width: 150,
+    height: 150,
+    bgcolor: 'rgba(255,255,255,0.08)',
+    borderRadius: '50%',
+  },
+  decorCircle2: {
+    position: 'absolute',
+    bottom: -50,
+    right: -20,
+    width: 180,
+    height: 180,
+    bgcolor: 'rgba(255,255,255,0.06)',
+    borderRadius: '50%',
+  },
+  decorCircle3: {
+    position: 'absolute',
+    top: 20,
+    left: 40,
+    width: 80,
+    height: 80,
+    bgcolor: 'rgba(255,255,255,0.05)',
+    borderRadius: '50%',
+  },
+  avatarRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    mt: '-48px',
+    mb: 2,
+    px: { xs: 2, sm: 0 },
+  },
+  avatar: {
+    width: 96,
+    height: 96,
+    border: '4px solid',
+    borderColor: 'background.paper',
+    boxShadow: '0 4px 14px rgba(28,24,20,0.14)',
+  },
+  profileInfo: { px: { xs: 2, sm: 0 }, mb: 3 },
+  nameHeading: { lineHeight: 1.2, mb: 0.3 },
+  username: { mb: 0.75 },
+  bio: { maxWidth: 440, mb: 0.75 },
+  statsBox: {
+    display: 'flex',
+    width: 'fit-content',
+    border: '1px solid',
+    borderColor: 'divider',
+    borderRadius: 3,
+    overflow: 'hidden',
+    mb: 4,
+    mx: { xs: 2, sm: 0 },
+  },
+  statCell: { px: { xs: 2.5, sm: 3.5 }, py: 1.5, textAlign: 'center' },
+  statValue: { lineHeight: 1.2, fontSize: { xs: 18, sm: 20 } },
+  statLabel: { textTransform: 'uppercase', letterSpacing: 0.6 },
+  recipesHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    mb: 2,
+    px: { xs: 2, sm: 0 },
+  },
+  recipeCount: { ml: 1, fontSize: 14, color: 'text.disabled', fontFamily: 'inherit' },
+  loadingBox: { display: 'flex', justifyContent: 'center', py: 10 },
+  emptyBox: {
+    textAlign: 'center',
+    py: 8,
+    border: '2px dashed',
+    borderColor: 'divider',
+    borderRadius: 3,
+  },
+  emptyText: { mb: 2 },
+  recipeGrid: { px: { xs: 2, sm: 0 } },
+  sentinel: { display: 'flex', justifyContent: 'center', py: 4 },
+  dialogTitle: {
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontWeight: 700,
+  },
+  dialogActions: { px: 3, pb: 2, gap: 1 },
+} satisfies Record<string, SxProps<Theme>>;
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User>(currentUser);
@@ -103,74 +199,19 @@ export default function ProfilePage() {
   return (
     <Container maxWidth="md" sx={{ pb: 6 }}>
       {/* Banner */}
-      <Box
-        sx={{
-          height: { xs: 130, sm: 180 },
-          background: 'linear-gradient(135deg, #E8631A 0%, #F5A53B 55%, #E84040 100%)',
-          borderRadius: { xs: 0, sm: 3 },
-          mx: { xs: -3, sm: 0 },
-          mt: { xs: 0, sm: 3 },
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+      <Box sx={styles.banner}>
         {/* Decorative circles */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -30,
-            right: 60,
-            width: 150,
-            height: 150,
-            bgcolor: 'rgba(255,255,255,0.08)',
-            borderRadius: '50%',
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: -50,
-            right: -20,
-            width: 180,
-            height: 180,
-            bgcolor: 'rgba(255,255,255,0.06)',
-            borderRadius: '50%',
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 20,
-            left: 40,
-            width: 80,
-            height: 80,
-            bgcolor: 'rgba(255,255,255,0.05)',
-            borderRadius: '50%',
-          }}
-        />
+        <Box sx={styles.decorCircle1} />
+        <Box sx={styles.decorCircle2} />
+        <Box sx={styles.decorCircle3} />
       </Box>
 
       {/* Avatar + Edit button row */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          mt: '-48px',
-          mb: 2,
-          px: { xs: 2, sm: 0 },
-        }}
-      >
+      <Box sx={styles.avatarRow}>
         <Avatar
           src={user.avatarUrl}
           alt={user.name}
-          sx={{
-            width: 96,
-            height: 96,
-            border: '4px solid',
-            borderColor: 'background.paper',
-            boxShadow: '0 4px 14px rgba(28,24,20,0.14)',
-          }}
+          sx={styles.avatar}
         />
         <Button
           variant="outlined"
@@ -183,15 +224,15 @@ export default function ProfilePage() {
       </Box>
 
       {/* Name, username, bio */}
-      <Box sx={{ px: { xs: 2, sm: 0 }, mb: 3 }}>
-        <Typography variant="h5" sx={{ lineHeight: 1.2, mb: 0.3 }}>
+      <Box sx={styles.profileInfo}>
+        <Typography variant="h5" sx={styles.nameHeading}>
           {user.name}
         </Typography>
-        <Typography variant="body2" color="primary" fontWeight={600} sx={{ mb: 0.75 }}>
+        <Typography variant="body2" color="primary" fontWeight={600} sx={styles.username}>
           @{user.username}
         </Typography>
         {user.bio && (
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 440, mb: 0.75 }}>
+          <Typography variant="body2" color="text.secondary" sx={styles.bio}>
             {user.bio}
           </Typography>
         )}
@@ -201,35 +242,21 @@ export default function ProfilePage() {
       </Box>
 
       {/* Stats */}
-      <Box
-        sx={{
-          display: 'flex',
-          width: 'fit-content',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 3,
-          overflow: 'hidden',
-          mb: 4,
-          mx: { xs: 2, sm: 0 },
-        }}
-      >
+      <Box sx={styles.statsBox}>
         {[
           { value: recipes.length, label: 'Recipes' },
           { value: user.followersCount.toLocaleString(), label: 'Followers' },
           { value: user.followingCount, label: 'Following' },
         ].map((stat, i) => (
           <Box key={stat.label}>
-            <Box sx={{ px: { xs: 2.5, sm: 3.5 }, py: 1.5, textAlign: 'center' }}>
-              <Typography
-                variant="h6"
-                sx={{ lineHeight: 1.2, fontSize: { xs: 18, sm: 20 } }}
-              >
+            <Box sx={styles.statCell}>
+              <Typography variant="h6" sx={styles.statValue}>
                 {stat.value}
               </Typography>
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ textTransform: 'uppercase', letterSpacing: 0.6 }}
+                sx={styles.statLabel}
               >
                 {stat.label}
               </Typography>
@@ -242,22 +269,11 @@ export default function ProfilePage() {
       </Box>
 
       {/* Recipes section */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          px: { xs: 2, sm: 0 },
-        }}
-      >
+      <Box sx={styles.recipesHeader}>
         <Typography variant="h6" sx={{ fontSize: 18 }}>
           My Recipes
           {recipes.length > 0 && (
-            <Box
-              component="span"
-              sx={{ ml: 1, fontSize: 14, color: 'text.disabled', fontFamily: 'inherit' }}
-            >
+            <Box component="span" sx={styles.recipeCount}>
               ({recipes.length})
             </Box>
           )}
@@ -274,21 +290,13 @@ export default function ProfilePage() {
       </Box>
 
       {pageLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+        <Box sx={styles.loadingBox}>
           <CircularProgress sx={{ color: 'primary.main' }} />
         </Box>
       ) : recipes.length === 0 ? (
-        <Box
-          sx={{
-            textAlign: 'center',
-            py: 8,
-            border: '2px dashed',
-            borderColor: 'divider',
-            borderRadius: 3,
-          }}
-        >
+        <Box sx={styles.emptyBox}>
           <Typography sx={{ fontSize: 36, mb: 1 }}>👨‍🍳</Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.disabled" sx={styles.emptyText}>
             No recipes yet. Share your first dish!
           </Typography>
           <Button
@@ -301,7 +309,7 @@ export default function ProfilePage() {
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={2} sx={{ px: { xs: 2, sm: 0 } }}>
+        <Grid container spacing={2} sx={styles.recipeGrid}>
           {visibleRecipes.map((recipe, i) => (
             <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <RecipeCard
@@ -315,7 +323,7 @@ export default function ProfilePage() {
       )}
 
       {/* Sentinel + loader */}
-      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box ref={sentinelRef} sx={styles.sentinel}>
         {loading && <CircularProgress size={26} sx={{ color: 'primary.main' }} />}
         {!hasMore && !loading && !pageLoading && recipes.length > 0 && (
           <Typography variant="caption" color="text.disabled">
@@ -339,12 +347,7 @@ export default function ProfilePage() {
       />
 
       <Dialog open={deletingRecipe !== null} onClose={() => setDeletingRecipe(null)}>
-        <DialogTitle
-          sx={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontWeight: 700,
-          }}
-        >
+        <DialogTitle sx={styles.dialogTitle}>
           Delete recipe?
         </DialogTitle>
         <DialogContent>
@@ -352,7 +355,7 @@ export default function ProfilePage() {
             <strong>{deletingRecipe?.title}</strong> will be permanently deleted.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+        <DialogActions sx={styles.dialogActions}>
           <Button
             onClick={() => setDeletingRecipe(null)}
             variant="outlined"

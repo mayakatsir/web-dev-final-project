@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { SxProps, Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -24,6 +25,56 @@ interface Props {
 }
 
 const DIFFICULTIES: Recipe['difficulty'][] = ['Easy', 'Medium', 'Hard'];
+
+const styles = {
+  dialogTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontWeight: 700,
+    fontSize: 20,
+    pb: 1,
+  },
+  fields: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    mt: 0.5,
+  },
+  imagePreview: {
+    width: '100%',
+    aspectRatio: '16/9',
+    objectFit: 'cover',
+    borderRadius: 3,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    aspectRatio: '16/9',
+    borderRadius: 3,
+    bgcolor: 'rgba(232,99,26,0.05)',
+    border: '2px dashed',
+    borderColor: 'rgba(232,99,26,0.2)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 1,
+    color: 'text.disabled',
+  },
+  categoryRow: {
+    display: 'flex',
+    gap: 2,
+  },
+  difficultySelect: {
+    minWidth: 130,
+  },
+  dialogActions: {
+    px: 3,
+    py: 2,
+    gap: 1,
+  },
+} satisfies Record<string, SxProps<Theme>>;
 
 export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props) {
   const [title, setTitle] = useState('');
@@ -64,17 +115,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontWeight: 700,
-          fontSize: 20,
-          pb: 1,
-        }}
-      >
+      <DialogTitle sx={styles.dialogTitle}>
         {isNew ? 'Share a Recipe' : 'Edit Recipe'}
         <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
           <CloseRoundedIcon fontSize="small" />
@@ -82,32 +123,11 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 0.5 }}>
-          {/* Image preview / placeholder */}
+        <Box sx={styles.fields}>
           {imageUrl ? (
-            <Box
-              component="img"
-              src={imageUrl}
-              alt="preview"
-              sx={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 3 }}
-            />
+            <Box component="img" src={imageUrl} alt="preview" sx={styles.imagePreview} />
           ) : (
-            <Box
-              sx={{
-                width: '100%',
-                aspectRatio: '16/9',
-                borderRadius: 3,
-                bgcolor: 'rgba(232,99,26,0.05)',
-                border: '2px dashed',
-                borderColor: 'rgba(232,99,26,0.2)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 1,
-                color: 'text.disabled',
-              }}
-            >
+            <Box sx={styles.imagePlaceholder}>
               <ImageRoundedIcon sx={{ fontSize: 36, opacity: 0.4 }} />
               <Typography variant="caption">Paste an image URL below</Typography>
             </Box>
@@ -121,7 +141,6 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             fullWidth
             placeholder="https://…"
           />
-
           <TextField
             label="Title"
             value={title}
@@ -131,7 +150,6 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             required
             slotProps={{ htmlInput: { maxLength: 100 } }}
           />
-
           <TextField
             label="Description"
             value={description}
@@ -144,8 +162,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             slotProps={{ htmlInput: { maxLength: 500 } }}
             helperText={`${description.length} / 500`}
           />
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={styles.categoryRow}>
             <TextField
               label="Category"
               value={category}
@@ -161,16 +178,13 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as Recipe['difficulty'])}
               size="small"
-              sx={{ minWidth: 130 }}
+              sx={styles.difficultySelect}
             >
               {DIFFICULTIES.map((d) => (
-                <MenuItem key={d} value={d}>
-                  {d}
-                </MenuItem>
+                <MenuItem key={d} value={d}>{d}</MenuItem>
               ))}
             </TextField>
           </Box>
-
           <TextField
             label="Cooking time (minutes)"
             type="number"
@@ -183,7 +197,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+      <DialogActions sx={styles.dialogActions}>
         <Button onClick={onClose} variant="outlined" color="inherit" sx={{ color: 'text.secondary' }}>
           Cancel
         </Button>
