@@ -1,44 +1,32 @@
-import { createUser, findUserByEmail } from '../dal';
-import { createTokens } from '../services/auth';
+import userRepository from '../repositories/userRepository';
+import { generateToken } from '../services/auth';
 import { googleLogin } from '../services/google';
 
-
 export const signInWithGoogle = async (credential: string) => {
-    // Implementation for signing in with Google using the provided credential
-
-    const payload = await googleLogin(credential); 
+    const payload = await googleLogin(credential);
     const userGmail = payload?.email;
 
-     if (!userGmail || !payload?.given_name || !payload?.family_name) {
+    if (!userGmail || !payload?.given_name || !payload?.family_name) {
         throw new Error('Received an invalid response from Google');
     }
 
-    let user = await findUserByEmail(userGmail);
+    let user = await userRepository.getUserByEmail(userGmail);
     if (!user) {
-        user = await createUser({
-            username: payload.given_name + payload.family_name,
-            email: userGmail,
-            password: 'google-sign-in',
-            profilePicture:
-                payload.picture ??
-                `https://eu.ui-avatars.com/api/?name=${payload.given_name}+${payload.family_name}&size=250`,
-        });
+        const username = payload.given_name + payload.family_name;
+        user = await userRepository.createUser(username, userGmail, 'google-sign-in');
     }
 
-    const { accessToken, refreshToken } = createTokens({ _id: user._id });
-    user.tokens.push(refreshToken);
+    const tokens = generateToken(user._id.toString());
+    user.refreshToken.push(tokens.refreshToken);
     await user.save();
 
     return {
-        accessToken,
-        refreshToken,
+        token: tokens.token,
+        refreshToken: tokens.refreshToken,
         user: {
             _id: user._id.toString(),
             username: user.username,
             email: user.email,
-            likes: user.likes,
-            watchLater: user.watchLater,
-            profilePicture: user.profilePicture,
         },
     };
-}
+};

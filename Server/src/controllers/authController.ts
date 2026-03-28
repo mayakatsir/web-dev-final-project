@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { generateToken } from "../services/auth";
 import userRepository from "../repositories/userRepository";
 import { getConfig } from "../services/config";
+import { signInWithGoogle } from "../bl/google";
 
 const config = getConfig();
 
