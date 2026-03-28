@@ -1,18 +1,22 @@
 import { InferSchemaType, Schema, model } from 'mongoose';
 
 const commentSchema = new Schema({
-    postId: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'post', 
+    postId: {
+        type: Schema.Types.ObjectId,
+        ref: 'post',
         required: true
     },
-    sender: { 
-        type: String, 
-        required: true 
-    },
-    content: { 
-        type: String, 
+    sender: {
+        type: String,
         required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    postedAt: {
+        type: String,
+        default: () => new Date().toISOString(),
     },
 });
 
