@@ -21,6 +21,7 @@ export interface Recipe {
   imageUrl: string;
   likesCount: number;
   likedBy: string[];
+  commentsCount: number;
   postedAt: string;
 }
 

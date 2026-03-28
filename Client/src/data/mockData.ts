@@ -1,9 +1,9 @@
 import type { User, Recipe, Comment } from '../types';
 
 export const currentUser: User = {
-  id: 'u1',
+  id: 'u2',
   name: 'Karen Itzhak',
-  username: 'karnicooks',
+  username: 'karicooks',
   bio: 'my kitchen my rules',
   avatarUrl: 'https://i.pravatar.cc/150?img=49',
   joinedDate: 'March 2024',

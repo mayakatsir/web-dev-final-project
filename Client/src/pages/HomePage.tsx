@@ -94,6 +94,7 @@ export default function HomePage() {
             <RecipeFeedCard
               key={recipe.id}
               recipe={recipe}
+              commentCount={recipe.commentsCount}
               liked={likes.has(recipe.id)}
               onLike={() => toggleLike(recipe.id)}
             />
