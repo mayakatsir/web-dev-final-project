@@ -6,7 +6,32 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import type { SxProps, Theme } from '@mui/material/styles';
 import { currentUser } from '../data/mockData';
+
+const styles = {
+  appBar: { bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' },
+  toolbar: { minHeight: '60px !important', px: { xs: 2, sm: 3 } },
+  logo: {
+    flexGrow: 1,
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontWeight: 700,
+    fontSize: { xs: 21, sm: 23 },
+    color: 'primary.main',
+    letterSpacing: '-0.5px',
+    userSelect: 'none',
+  },
+  navLinksBox: { display: 'flex', gap: 0.5, mr: 1.5 },
+  navLinkLabel: { display: { xs: 'none', sm: 'inline' } },
+  avatar: {
+    width: 36,
+    height: 36,
+    border: '2.5px solid',
+    borderColor: 'primary.light',
+    transition: 'border-color 0.15s',
+    '&:hover': { borderColor: 'primary.main' },
+  },
+} satisfies Record<string, SxProps<Theme>>;
 
 const navItems = [
   { path: '/', icon: <GridViewRoundedIcon sx={{ fontSize: 19 }} />, label: 'Feed' },
@@ -18,26 +43,16 @@ export default function Navbar() {
     <AppBar
       position="sticky"
       elevation={0}
-      sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}
+      sx={styles.appBar}
     >
-      <Toolbar sx={{ minHeight: '60px !important', px: { xs: 2, sm: 3 } }}>
+      <Toolbar sx={styles.toolbar}>
         {/* Logo */}
-        <Typography
-          sx={{
-            flexGrow: 1,
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontWeight: 700,
-            fontSize: { xs: 21, sm: 23 },
-            color: 'primary.main',
-            letterSpacing: '-0.5px',
-            userSelect: 'none',
-          }}
-        >
+        <Typography sx={styles.logo}>
           EATing
         </Typography>
 
         {/* Nav links */}
-        <Box sx={{ display: 'flex', gap: 0.5, mr: 1.5 }}>
+        <Box sx={styles.navLinksBox}>
           {navItems.map(({ path, icon, label }) => (
             <NavLink key={path} to={path} end style={{ textDecoration: 'none' }}>
               {({ isActive }) => (
@@ -59,7 +74,7 @@ export default function Navbar() {
                   }}
                 >
                   {icon}
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  <Box component="span" sx={styles.navLinkLabel}>
                     {label}
                   </Box>
                 </Box>
@@ -73,14 +88,7 @@ export default function Navbar() {
           <Avatar
             src={currentUser.avatarUrl}
             alt={currentUser.name}
-            sx={{
-              width: 36,
-              height: 36,
-              border: '2.5px solid',
-              borderColor: 'primary.light',
-              transition: 'border-color 0.15s',
-              '&:hover': { borderColor: 'primary.main' },
-            }}
+            sx={styles.avatar}
           />
         </NavLink>
       </Toolbar>

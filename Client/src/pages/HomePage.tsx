@@ -3,12 +3,21 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { Recipe } from '../types';
 import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
 import { currentUser } from '../data/mockData';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const PAGE_SIZE = 6;
+
+const styles = {
+  heading: { mb: 3, fontSize: { xs: 22, sm: 26 } },
+  loadingBox: { display: 'flex', justifyContent: 'center', py: 10 },
+  emptyBox: { textAlign: 'center', py: 10 },
+  feedList: { display: 'flex', flexDirection: 'column', gap: 2.5 },
+  sentinel: { display: 'flex', justifyContent: 'center', py: 5 },
+} satisfies Record<string, SxProps<Theme>>;
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -74,19 +83,16 @@ export default function HomePage() {
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Typography
-        variant="h5"
-        sx={{ mb: 3, fontSize: { xs: 22, sm: 26 } }}
-      >
+      <Typography variant="h5" sx={styles.heading}>
         What's cooking today
       </Typography>
 
       {pageLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+        <Box sx={styles.loadingBox}>
           <CircularProgress sx={{ color: 'primary.main' }} />
         </Box>
       ) : recipes.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 10 }}>
+        <Box sx={styles.emptyBox}>
           <Typography variant="h6" color="text.disabled" sx={{ mb: 1, fontSize: 40 }}>
             🍳
           </Typography>
@@ -95,7 +101,7 @@ export default function HomePage() {
           </Typography>
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box sx={styles.feedList}>
           {recipes.slice(0, visibleCount).map((recipe) => (
             <RecipeFeedCard
               key={recipe.id}
@@ -108,7 +114,7 @@ export default function HomePage() {
         </Box>
       )}
 
-      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+      <Box ref={sentinelRef} sx={styles.sentinel}>
         {loading && <CircularProgress size={26} sx={{ color: 'primary.main' }} />}
         {!hasMore && !loading && !pageLoading && recipes.length > 0 && (
           <Typography variant="caption" color="text.disabled">
