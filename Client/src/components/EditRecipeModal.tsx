@@ -8,7 +8,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import CloseIcon from '@mui/icons-material/Close';
+import Typography from '@mui/material/Typography';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
 import type { Recipe } from '../types';
 
 interface Props {
@@ -44,6 +46,8 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
   if (!recipe) return null;
 
+  const isNew = recipe.id === '';
+
   function handleSave() {
     onSave(recipe!.id, {
       title: title.trim(),
@@ -60,24 +64,55 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {recipe.id === '' ? 'New Recipe' : 'Edit Recipe'}
-        <IconButton size="small" onClick={onClose}>
-          <CloseIcon fontSize="small" />
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontWeight: 700,
+          fontSize: 20,
+          pb: 1,
+        }}
+      >
+        {isNew ? 'Share a Recipe' : 'Edit Recipe'}
+        <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
+          <CloseRoundedIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          {/* Image preview */}
-          {imageUrl && (
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 0.5 }}>
+          {/* Image preview / placeholder */}
+          {imageUrl ? (
             <Box
               component="img"
               src={imageUrl}
               alt="preview"
-              sx={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 2 }}
+              sx={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 3 }}
             />
+          ) : (
+            <Box
+              sx={{
+                width: '100%',
+                aspectRatio: '16/9',
+                borderRadius: 3,
+                bgcolor: 'rgba(232,99,26,0.05)',
+                border: '2px dashed',
+                borderColor: 'rgba(232,99,26,0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1,
+                color: 'text.disabled',
+              }}
+            >
+              <ImageRoundedIcon sx={{ fontSize: 36, opacity: 0.4 }} />
+              <Typography variant="caption">Paste an image URL below</Typography>
+            </Box>
           )}
+
           <TextField
             label="Image URL"
             value={imageUrl}
@@ -86,6 +121,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             fullWidth
             placeholder="https://…"
           />
+
           <TextField
             label="Title"
             value={title}
@@ -93,8 +129,9 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             size="small"
             fullWidth
             required
-            inputProps={{ maxLength: 100 }}
+            slotProps={{ htmlInput: { maxLength: 100 } }}
           />
+
           <TextField
             label="Description"
             value={description}
@@ -103,10 +140,11 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
             fullWidth
             required
             multiline
-            rows={4}
-            inputProps={{ maxLength: 500 }}
-            helperText={`${description.length}/500`}
+            rows={3}
+            slotProps={{ htmlInput: { maxLength: 500 } }}
+            helperText={`${description.length} / 500`}
           />
+
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               label="Category"
@@ -114,6 +152,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
               onChange={(e) => setCategory(e.target.value)}
               size="small"
               fullWidth
+              placeholder="e.g. Pasta, Dessert…"
               slotProps={{ htmlInput: { maxLength: 40 } }}
             />
             <TextField
@@ -131,6 +170,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
               ))}
             </TextField>
           </Box>
+
           <TextField
             label="Cooking time (minutes)"
             type="number"
@@ -143,17 +183,12 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} sx={{ textTransform: 'none' }}>
+      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+        <Button onClick={onClose} variant="outlined" color="inherit" sx={{ color: 'text.secondary' }}>
           Cancel
         </Button>
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          disabled={!isValid}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
-        >
-          {recipe.id === '' ? 'Create' : 'Save changes'}
+        <Button variant="contained" onClick={handleSave} disabled={!isValid}>
+          {isNew ? 'Share Recipe' : 'Save changes'}
         </Button>
       </DialogActions>
     </Dialog>

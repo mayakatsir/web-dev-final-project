@@ -1,16 +1,18 @@
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import type { Recipe } from '../types';
-import { formatCookingTime, formatDate } from '../utils/formatTimeUtils';
+import { formatCookingTime } from '../utils/formatTimeUtils';
+
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=300&fit=crop';
 
 interface Props {
   recipe: Recipe;
@@ -28,125 +30,141 @@ export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
   return (
     <Card
       sx={{
-        borderRadius: 3,
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
-        '&:hover .card-actions': { opacity: 1 },
         cursor: 'pointer',
+        transition: 'transform 0.22s, box-shadow 0.22s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 12px 32px rgba(28,24,20,0.13)',
+        },
+        '&:hover .edit-overlay': { opacity: 1 },
+        overflow: 'hidden',
       }}
     >
+      {/* Image with gradient + overlay */}
       <Box sx={{ position: 'relative' }}>
         <CardMedia
           component="img"
-          image={recipe.imageUrl}
+          image={recipe.imageUrl || FALLBACK_IMAGE}
           alt={recipe.title}
-          sx={{ aspectRatio: '4/3', objectFit: 'cover' }}
+          sx={{ aspectRatio: '4/3', objectFit: 'cover', display: 'block' }}
         />
-        <Chip
-          label={recipe.category}
-          size="small"
+
+        {/* Gradient overlay with title */}
+        <Box
           sx={{
             position: 'absolute',
-            top: 10,
-            left: 10,
-            bgcolor: 'rgba(0,0,0,0.6)',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: 11,
+            inset: 0,
+            background:
+              'linear-gradient(to top, rgba(20,10,4,0.82) 0%, rgba(20,10,4,0.15) 50%, transparent 100%)',
+            p: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
           }}
-        />
+        >
+          <Typography
+            sx={{
+              color: '#fff',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontWeight: 700,
+              fontSize: 14,
+              lineHeight: 1.3,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              mb: 0.5,
+            }}
+          >
+            {recipe.title}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+              <AccessTimeRoundedIcon sx={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }} />
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
+                {formatCookingTime(recipe.cookingTime)}
+              </Typography>
+            </Box>
+            <Chip
+              label={recipe.difficulty}
+              size="small"
+              color={difficultyColor[recipe.difficulty]}
+              sx={{ height: 18, fontSize: 10 }}
+            />
+          </Box>
+        </Box>
+
+        {/* Edit / delete hover overlay */}
         {(onEdit || onDelete) && (
           <Box
-            className="card-actions"
+            className="edit-overlay"
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 8,
-              display: 'flex',
-              gap: 0.5,
+              inset: 0,
+              bgcolor: 'rgba(0,0,0,0.42)',
               opacity: 0,
               transition: 'opacity 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
             }}
           >
             {onEdit && (
               <IconButton
                 size="small"
-                onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                sx={{ bgcolor: 'rgba(0,0,0,0.55)', color: '#fff', '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' } }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                sx={{
+                  bgcolor: 'white',
+                  color: 'text.primary',
+                  '&:hover': { bgcolor: 'primary.main', color: 'white' },
+                }}
               >
-                <EditIcon sx={{ fontSize: 15 }} />
+                <EditRoundedIcon sx={{ fontSize: 16 }} />
               </IconButton>
             )}
             {onDelete && (
               <IconButton
                 size="small"
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                sx={{ bgcolor: 'rgba(0,0,0,0.55)', color: '#ff6b6b', '&:hover': { bgcolor: 'rgba(180,0,0,0.75)', color: '#fff' } }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                sx={{
+                  bgcolor: 'white',
+                  color: 'error.main',
+                  '&:hover': { bgcolor: 'error.main', color: 'white' },
+                }}
               >
-                <DeleteIcon sx={{ fontSize: 15 }} />
+                <DeleteRoundedIcon sx={{ fontSize: 16 }} />
               </IconButton>
             )}
           </Box>
         )}
       </Box>
 
-      <CardContent sx={{ pb: '16px !important' }}>
-        <Typography
-          variant="subtitle1"
-          fontWeight={600}
-          gutterBottom
-          sx={{
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {recipe.title}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mb: 1.5,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {recipe.description}
-        </Typography>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-            <Typography variant="caption" color="text.secondary">
-              {formatCookingTime(recipe.cookingTime)}
-            </Typography>
-          </Box>
-
-          <Chip
-            label={recipe.difficulty}
-            size="small"
-            color={difficultyColor[recipe.difficulty]}
-            variant="outlined"
-            sx={{ height: 20, fontSize: 11 }}
-          />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <FavoriteIcon sx={{ fontSize: 13, color: 'error.main' }} />
-            <Typography variant="caption" color="text.secondary">
-              {recipe.likesCount.toLocaleString()}
-            </Typography>
-          </Box>
-
-          <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto' }}>
-            {formatDate(recipe.postedAt)}
+      {/* Footer */}
+      <Box
+        sx={{
+          px: 1.5,
+          py: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Chip label={recipe.category || 'General'} size="small" variant="outlined" />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+          <FavoriteRoundedIcon sx={{ fontSize: 12, color: 'error.light' }} />
+          <Typography variant="caption" color="text.secondary">
+            {recipe.likesCount.toLocaleString()}
           </Typography>
         </Box>
-      </CardContent>
+      </Box>
     </Card>
   );
 }
