@@ -13,6 +13,7 @@ interface ServerPost {
   imageUrl: string;
   likesCount: number;
   likedBy: string[];
+  commentsCount: number;
   postedAt: string;
 }
 
@@ -28,6 +29,7 @@ function toRecipe(post: ServerPost): Recipe {
     difficulty: post.difficulty ?? 'Easy',
     likesCount: post.likesCount ?? 0,
     likedBy: post.likedBy ?? [],
+    commentsCount: post.commentsCount ?? 0,
     postedAt: post.postedAt ?? new Date().toISOString(),
   };
 }

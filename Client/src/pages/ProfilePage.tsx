@@ -33,6 +33,7 @@ const BLANK_RECIPE: Recipe = {
   imageUrl: '',
   likesCount: 0,
   likedBy: [],
+  commentsCount: 0,
   postedAt: '',
 };
 

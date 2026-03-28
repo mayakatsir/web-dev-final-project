@@ -35,6 +35,14 @@ class PostRepository {
     await postModel.findByIdAndUpdate(id, updates);
   }
 
+  async incrementCommentsCount(postId: string) {
+    await postModel.updateOne({ _id: postId }, { $inc: { commentsCount: 1 } });
+  }
+
+  async decrementCommentsCount(postId: string) {
+    await postModel.updateOne({ _id: postId, commentsCount: { $gt: 0 } }, { $inc: { commentsCount: -1 } });
+  }
+
   async likePost(postId: string, userId: string) {
     await postModel.updateOne(
       { _id: postId, likedBy: { $ne: userId } },
