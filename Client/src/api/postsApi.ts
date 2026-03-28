@@ -30,6 +30,12 @@ function toRecipe(post: ServerPost): Recipe {
   };
 }
 
+export async function fetchAllPosts(): Promise<Recipe[]> {
+  const res = await fetch(`${BASE_URL}/post`);
+  const data = await res.json();
+  return (data.posts as ServerPost[]).map(toRecipe);
+}
+
 export async function fetchUserPosts(senderId: string): Promise<Recipe[]> {
   const res = await fetch(`${BASE_URL}/post?sender=${encodeURIComponent(senderId)}`);
   const data = await res.json();
