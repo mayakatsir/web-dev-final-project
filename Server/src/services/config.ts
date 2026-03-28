@@ -37,6 +37,7 @@ export const getConfig = () => {
             ACCESS_TOKEN_EXPIRES_SEC: parseInt(env.ACCESS_TOKEN_EXPIRES_SEC) || 60*60*24,
             JWT_ACCESS_SECRET: env.JWT_ACCESS_SECRET,
             JWT_REFRESH_SECRET: env.JWT_REFRESH_SECRET,
+            GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
         };
     }
     
