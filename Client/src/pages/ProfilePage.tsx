@@ -12,17 +12,33 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import AddIcon from '@mui/icons-material/Add';
 import type { Recipe, User } from '../types';
-import { currentUser, userRecipes as initialRecipes } from '../data/mockData';
+import { currentUser } from '../data/mockData';
+import { createPost, deletePost, fetchUserPosts, updatePost } from '../api/postsApi';
 import EditProfileModal from '../components/EditProfileModal';
 import EditRecipeModal from '../components/EditRecipeModal';
 import RecipeCard from '../components/RecipeCard';
 
 const PAGE_SIZE = 9;
 
+const BLANK_RECIPE: Recipe = {
+  id: '',
+  authorId: currentUser.id,
+  title: '',
+  description: '',
+  category: 'General',
+  cookingTime: 30,
+  difficulty: 'Easy',
+  imageUrl: '',
+  likesCount: 0,
+  postedAt: '',
+};
+
 export default function ProfilePage() {
   const [user, setUser] = useState<User>(currentUser);
-  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [pageLoading, setPageLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
@@ -31,6 +47,13 @@ export default function ProfilePage() {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const hasMore = visibleCount < recipes.length;
+
+  useEffect(() => {
+    fetchUserPosts(currentUser.id).then((posts) => {
+      setRecipes(posts);
+      setPageLoading(false);
+    });
+  }, []);
 
   // TODO: reserch more pagination options
   useEffect(() => {
@@ -55,12 +78,22 @@ export default function ProfilePage() {
     return () => observer.disconnect();
   }, [hasMore, loading, recipes.length]);
 
-  function handleSaveRecipe(id: string, updated: Pick<Recipe, 'title' | 'description' | 'imageUrl'>) {
-    setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+  async function handleSaveRecipe(
+    id: string,
+    updated: Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>,
+  ) {
+    if (id === '') {
+      const newRecipe = await createPost(updated, currentUser.id);
+      setRecipes((prev) => [newRecipe, ...prev]);
+    } else {
+      await updatePost(id, updated, currentUser.id);
+      setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
+    }
   }
 
-  function handleDeleteRecipe() {
+  async function handleDeleteRecipe() {
     if (!deletingRecipe) return;
+    await deletePost(deletingRecipe.id);
     setRecipes((prev) => prev.filter((r) => r.id !== deletingRecipe.id));
     setDeletingRecipe(null);
   }
@@ -123,7 +156,7 @@ export default function ProfilePage() {
             }}
           >
             {[
-              { value: user.recipesCount, label: 'Recipes' },
+              { value: recipes.length, label: 'Recipes' },
               { value: user.followersCount.toLocaleString(), label: 'Followers' },
               { value: user.followingCount, label: 'Following' },
             ].map((stat, i, arr) => (
@@ -158,25 +191,49 @@ export default function ProfilePage() {
       </Box>
 
       {/* Recipes Grid */}
-      <Typography variant="h6" fontWeight={600} gutterBottom>
-        My Recipes
-      </Typography>
-      <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
-        {visibleRecipes.map((recipe, i) => (
-          <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
-            <RecipeCard
-              recipe={recipe}
-              onEdit={() => setEditingRecipe(recipe)}
-              onDelete={() => setDeletingRecipe(recipe)}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          My Recipes
+        </Typography>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<AddIcon />}
+          onClick={() => setEditingRecipe(BLANK_RECIPE)}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
+          New Recipe
+        </Button>
+      </Box>
+
+      {pageLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : recipes.length === 0 ? (
+        <Typography variant="body2" color="text.disabled" sx={{ py: 4, textAlign: 'center' }}>
+          No recipes yet. Create your first one!
+        </Typography>
+      ) : (
+        <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
+          {visibleRecipes.map((recipe, i) => (
+            <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
+              <RecipeCard
+                recipe={recipe}
+                onEdit={() => setEditingRecipe(recipe)}
+                onDelete={() => setDeletingRecipe(recipe)}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* Sentinel + loader */}
       <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         {loading && <CircularProgress size={28} />}
-        {!hasMore && !loading && (
+        {!hasMore && !loading && !pageLoading && recipes.length > 0 && (
           <Typography variant="caption" color="text.disabled">
             All recipes loaded
           </Typography>
