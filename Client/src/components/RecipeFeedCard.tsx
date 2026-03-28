@@ -118,7 +118,7 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
               '&:hover': { color: 'error.main', bgcolor: 'error.50' },
             }}
           >
-            {recipe.likesCount + (liked ? 1 : 0)}
+            {recipe.likesCount}
           </Button>
           <Button
             size="small"

@@ -4,7 +4,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import type { Recipe } from '../types';
-import { fetchAllPosts } from '../api/postsApi';
+import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
+import { currentUser } from '../data/mockData';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const PAGE_SIZE = 6;
@@ -21,7 +22,10 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchAllPosts()
-      .then(setRecipes)
+      .then((posts) => {
+        setRecipes(posts);
+        setLikes(new Set(posts.filter((p) => p.likedBy.includes(currentUser.id)).map((p) => p.id)));
+      })
       .catch(console.error)
       .finally(() => setPageLoading(false));
   }, []);
@@ -48,11 +52,26 @@ export default function HomePage() {
   }, [hasMore, loading, recipes.length]);
 
   function toggleLike(recipeId: string) {
+    const alreadyLiked = likes.has(recipeId);
+
+    // Optimistic update
     setLikes((prev) => {
       const next = new Set(prev);
-      next.has(recipeId) ? next.delete(recipeId) : next.add(recipeId);
+      alreadyLiked ? next.delete(recipeId) : next.add(recipeId);
       return next;
     });
+    setRecipes((prev) =>
+      prev.map((r) =>
+        r.id === recipeId ? { ...r, likesCount: r.likesCount + (alreadyLiked ? -1 : 1) } : r,
+      ),
+    );
+
+    // Fire and forget
+    if (alreadyLiked) {
+      unlikePost(recipeId, currentUser.id).catch(console.error);
+    } else {
+      likePost(recipeId, currentUser.id).catch(console.error);
+    }
   }
 
   return (
