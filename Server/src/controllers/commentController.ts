@@ -20,7 +20,7 @@ class CommentController {
                 return res.status(400).json({ message: `Non existent post with id: ${postId}` });
             }
 
-            const comment = await commentRepository.createComment({ sender, content, postId: postId });
+            const comment = await commentRepository.createComment({ sender, content, postId: postId, postedAt: new Date().toISOString() });
             await postRepository.incrementCommentsCount(postId);
 
             return res.status(200).json(comment);
