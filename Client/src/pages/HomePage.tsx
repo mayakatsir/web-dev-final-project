@@ -33,7 +33,7 @@ export default function HomePage() {
   useEffect(() => {
     fetchAllPosts()
       .then((posts) => {
-        setRecipes(posts);
+        setRecipes(posts.slice().sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()));
         const uid = user?._id ?? '';
         setLikes(new Set(posts.filter((p) => uid && p.likedBy.includes(uid)).map((p) => p.id)));
       })
