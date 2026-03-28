@@ -11,13 +11,13 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import type { User } from '../types';
+import type { AuthUser } from '../context/AuthContext';
 
 interface Props {
   open: boolean;
-  user: User;
+  user: AuthUser;
   onClose: () => void;
-  onSave: (updated: Pick<User, 'name' | 'username' | 'bio' | 'avatarUrl'>) => void;
+  onSave: (updated: Pick<AuthUser, 'name' | 'username' | 'bio' | 'avatarUrl'>) => void;
 }
 
 const styles = {
