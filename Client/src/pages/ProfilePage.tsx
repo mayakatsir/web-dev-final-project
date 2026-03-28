@@ -32,6 +32,7 @@ const BLANK_RECIPE: Recipe = {
   difficulty: 'Easy',
   imageUrl: '',
   likesCount: 0,
+  likedBy: [],
   postedAt: '',
 };
 

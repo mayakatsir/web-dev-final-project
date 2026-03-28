@@ -12,6 +12,7 @@ interface ServerPost {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   imageUrl: string;
   likesCount: number;
+  likedBy: string[];
   postedAt: string;
 }
 
@@ -26,6 +27,7 @@ function toRecipe(post: ServerPost): Recipe {
     cookingTime: post.cookingTime ?? 30,
     difficulty: post.difficulty ?? 'Easy',
     likesCount: post.likesCount ?? 0,
+    likedBy: post.likedBy ?? [],
     postedAt: post.postedAt ?? new Date().toISOString(),
   };
 }
@@ -64,4 +66,20 @@ export async function updatePost(id: string, fields: PostFields, senderId: strin
 
 export async function deletePost(id: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${id}`, { method: 'DELETE' });
+}
+
+export async function likePost(postId: string, userId: string): Promise<void> {
+  await fetch(`${BASE_URL}/post/${postId}/like`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+}
+
+export async function unlikePost(postId: string, userId: string): Promise<void> {
+  await fetch(`${BASE_URL}/post/${postId}/like`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
 }

@@ -92,6 +92,46 @@ class PostController {
     }
   }
 
+  async likePost(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { userId } = req.body;
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ message: `Invalid post id: ${id}` });
+      }
+      if (!userId) {
+        return res.status(400).json({ message: 'userId is required' });
+      }
+
+      await PostRepository.likePost(id, userId);
+      return res.status(200).json({ message: 'Liked' });
+    } catch (err) {
+      console.error('Error liking post', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  async unlikePost(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { userId } = req.body;
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ message: `Invalid post id: ${id}` });
+      }
+      if (!userId) {
+        return res.status(400).json({ message: 'userId is required' });
+      }
+
+      await PostRepository.unlikePost(id, userId);
+      return res.status(200).json({ message: 'Unliked' });
+    } catch (err) {
+      console.error('Error unliking post', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
   async deletePostById(req: Request, res: Response) {
     try {
       const { id } = req.params;

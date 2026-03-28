@@ -34,6 +34,10 @@ const postSchema = new Schema({
     type: Number,
     default: 0,
   },
+  likedBy: {
+    type: [String],
+    default: [],
+  },
   postedAt: {
     type: String,
     default: () => new Date().toISOString(),
