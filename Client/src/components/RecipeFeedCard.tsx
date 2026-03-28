@@ -10,6 +10,7 @@ import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { Recipe, User } from '../types'; // User kept for optional author prop
 
 const FALLBACK_IMAGE =
@@ -46,6 +47,40 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
+const styles = {
+  authorRow: { display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 },
+  authorBox: { flex: 1, minWidth: 0 },
+  cardImage: { aspectRatio: '4/3', objectFit: 'cover' },
+  actionsRow: { px: 1, pt: 0.75, pb: 0, display: 'flex', gap: 0.25 },
+  commentButton: {
+    color: 'text.secondary',
+    fontWeight: 500,
+    fontSize: 13,
+    px: 1,
+    '&:hover': { color: 'primary.main', bgcolor: 'transparent' },
+  },
+  contentBox: { px: 2, pt: 1, pb: 2 },
+  title: {
+    fontSize: 17,
+    lineHeight: 1.35,
+    mb: 0.5,
+    overflow: 'hidden',
+    display: '-webkit-box',
+    WebkitLineClamp: 1,
+    WebkitBoxOrient: 'vertical',
+  },
+  description: {
+    mb: 1.5,
+    lineHeight: 1.55,
+    overflow: 'hidden',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+  },
+  metaRow: { display: 'flex', gap: 1.5, alignItems: 'center' },
+  timeRow: { display: 'flex', alignItems: 'center', gap: 0.4 },
+} satisfies Record<string, SxProps<Theme>>;
+
 export default function RecipeFeedCard({ recipe, author, commentCount, liked, onLike }: Props) {
   const navigate = useNavigate();
 
@@ -56,9 +91,9 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
   return (
     <Card>
       {/* Author row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
+      <Box sx={styles.authorRow}>
         <Avatar src={avatarSrc} alt={displayName} sx={{ width: 42, height: 42 }} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={styles.authorBox}>
           <Typography variant="subtitle2" fontWeight={700} lineHeight={1.2} noWrap>
             {displayName}
           </Typography>
@@ -82,11 +117,11 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
         component="img"
         image={recipe.imageUrl || FALLBACK_IMAGE}
         alt={recipe.title}
-        sx={{ aspectRatio: '4/3', objectFit: 'cover' }}
+        sx={styles.cardImage}
       />
 
       {/* Like / comment actions */}
-      <Box sx={{ px: 1, pt: 0.75, pb: 0, display: 'flex', gap: 0.25 }}>
+      <Box sx={styles.actionsRow}>
         <Button
           size="small"
           startIcon={
@@ -113,52 +148,28 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
             <ChatBubbleOutlineRoundedIcon sx={{ fontSize: '17px !important' }} />
           }
           onClick={() => navigate(`/recipe/${recipe.id}`)}
-          sx={{
-            color: 'text.secondary',
-            fontWeight: 500,
-            fontSize: 13,
-            px: 1,
-            '&:hover': { color: 'primary.main', bgcolor: 'transparent' },
-          }}
+          sx={styles.commentButton}
         >
           {commentCount ?? 0}
         </Button>
       </Box>
 
       {/* Title + description + meta */}
-      <Box sx={{ px: 2, pt: 1, pb: 2 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontSize: 17,
-            lineHeight: 1.35,
-            mb: 0.5,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
+      <Box sx={styles.contentBox}>
+        <Typography variant="h6" sx={styles.title}>
           {recipe.title}
         </Typography>
 
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{
-            mb: 1.5,
-            lineHeight: 1.55,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
+          sx={styles.description}
         >
           {recipe.description}
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+        <Box sx={styles.metaRow}>
+          <Box sx={styles.timeRow}>
             <AccessTimeRoundedIcon sx={{ fontSize: 13, color: 'text.disabled' }} />
             <Typography variant="caption" color="text.secondary">
               {formatCookingTime(recipe.cookingTime)}
