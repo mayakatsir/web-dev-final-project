@@ -3,23 +3,28 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { feedRecipes, otherUsers, seedComments } from '../data/mockData';
+import type { Recipe } from '../types';
+import { fetchAllPosts } from '../api/postsApi';
 import RecipeFeedCard from '../components/RecipeFeedCard';
-
-const userMap = Object.fromEntries(otherUsers.map((u) => [u.id, u]));
-const commentCountMap = Object.fromEntries(
-  feedRecipes.map((r) => [r.id, seedComments.filter((c) => c.recipeId === r.id).length]),
-);
 
 const PAGE_SIZE = 6;
 
 export default function HomePage() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [pageLoading, setPageLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const hasMore = visibleCount < feedRecipes.length;
+  const hasMore = visibleCount < recipes.length;
+
+  useEffect(() => {
+    fetchAllPosts()
+      .then(setRecipes)
+      .catch(console.error)
+      .finally(() => setPageLoading(false));
+  }, []);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -30,7 +35,7 @@ export default function HomePage() {
         if (entries[0].isIntersecting && hasMore && !loading) {
           setLoading(true);
           setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, feedRecipes.length));
+            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, recipes.length));
             setLoading(false);
           }, 600);
         }
@@ -40,7 +45,7 @@ export default function HomePage() {
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [hasMore, loading, recipes.length]);
 
   function toggleLike(recipeId: string) {
     setLikes((prev) => {
@@ -55,22 +60,31 @@ export default function HomePage() {
       <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
         What's cooking today
       </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {feedRecipes.slice(0, visibleCount).map((recipe) => (
-          <RecipeFeedCard
-            key={recipe.id}
-            recipe={recipe}
-            author={userMap[recipe.authorId]}
-            commentCount={commentCountMap[recipe.id] ?? 0}
-            liked={likes.has(recipe.id)}
-            onLike={() => toggleLike(recipe.id)}
-          />
-        ))}
-      </Box>
+
+      {pageLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : recipes.length === 0 ? (
+        <Typography variant="body2" color="text.disabled" sx={{ textAlign: 'center', py: 6 }}>
+          No recipes yet. Be the first to post one!
+        </Typography>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {recipes.slice(0, visibleCount).map((recipe) => (
+            <RecipeFeedCard
+              key={recipe.id}
+              recipe={recipe}
+              liked={likes.has(recipe.id)}
+              onLike={() => toggleLike(recipe.id)}
+            />
+          ))}
+        </Box>
+      )}
 
       <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         {loading && <CircularProgress size={28} />}
-        {!hasMore && !loading && (
+        {!hasMore && !loading && !pageLoading && recipes.length > 0 && (
           <Typography variant="caption" color="text.disabled">
             You're all caught up
           </Typography>

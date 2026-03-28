@@ -11,12 +11,12 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
-import type { Recipe, User } from '../types';
+import type { Recipe, User } from '../types'; // User kept for optional author prop
 
 interface Props {
   recipe: Recipe;
-  author: User;
-  commentCount: number;
+  author?: User;
+  commentCount?: number;
   liked: boolean;
   onLike: () => void;
 }
@@ -45,17 +45,21 @@ function timeAgo(dateStr: string): string {
 export default function RecipeFeedCard({ recipe, author, commentCount, liked, onLike }: Props) {
   const navigate = useNavigate();
 
+  const displayName = author?.name ?? recipe.authorId;
+  const displayUsername = author?.username ?? recipe.authorId;
+  const avatarSrc = author?.avatarUrl ?? `https://i.pravatar.cc/150?u=${recipe.authorId}`;
+
   return (
     <Card elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 3 }}>
       {/* Author row */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, pb: 1.5 }}>
-        <Avatar src={author.avatarUrl} alt={author.name} sx={{ width: 40, height: 40 }} />
+        <Avatar src={avatarSrc} alt={displayName} sx={{ width: 40, height: 40 }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle2" fontWeight={600} lineHeight={1.2}>
-            {author.name}
+            {displayName}
           </Typography>
           <Typography variant="caption" color="text.disabled">
-            @{author.username} · {timeAgo(recipe.postedAt)}
+            @{displayUsername} · {timeAgo(recipe.postedAt)}
           </Typography>
         </Box>
         <Chip
@@ -126,7 +130,7 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
               '&:hover': { bgcolor: 'action.hover' },
             }}
           >
-            {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+            {commentCount ?? 0} {(commentCount ?? 0) === 1 ? 'comment' : 'comments'}
           </Button>
         </Box>
       </Box>

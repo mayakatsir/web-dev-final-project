@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -11,46 +12,40 @@ import Typography from '@mui/material/Typography';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import type { Comment } from '../types';
-import { currentUser, feedRecipes, otherUsers, seedComments } from '../data/mockData';
-
-const userMap = Object.fromEntries(otherUsers.map((u) => [u.id, u]));
+import { currentUser } from '../data/mockData';
+import { createComment, fetchComments } from '../api/commentsApi';
 
 export default function CommentsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const recipe = feedRecipes.find((r) => r.id === id);
-
-  const [comments, setComments] = useState<Comment[]>(
-    seedComments.filter((c) => c.recipeId === id),
-  );
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit() {
+  useEffect(() => {
+    if (!id) return;
+    fetchComments(id)
+      .then(setComments)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  async function handleSubmit() {
     const trimmed = commentText.trim();
-    if (!trimmed) return;
-    setComments((prev) => [
-      ...prev,
-      {
-        id: `c-${Date.now()}`,
-        recipeId: id!,
-        authorId: currentUser.id,
-        text: trimmed,
-        postedAt: new Date().toISOString(),
-      },
-    ]);
-    setCommentText('');
-  }
+    if (!trimmed || !id) return;
 
-  if (!recipe) {
-    return (
-      <Container maxWidth="sm" sx={{ py: 6, textAlign: 'center' }}>
-        <Typography color="text.secondary">Recipe not found.</Typography>
-        <Button onClick={() => navigate('/')} sx={{ mt: 2, textTransform: 'none' }}>
-          Back to feed
-        </Button>
-      </Container>
-    );
+    setSubmitting(true);
+    try {
+      const newComment = await createComment(id, currentUser.id, trimmed);
+      setComments((prev) => [...prev, newComment]);
+      setCommentText('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -66,23 +61,25 @@ export default function CommentsPage() {
 
       {/* Comments header */}
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-        {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+        {loading ? '…' : `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}`}
       </Typography>
 
       {/* Comment list */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-        {comments.length === 0 && (
-          <Typography variant="body2" color="text.disabled">
-            No comments yet. Be the first!
-          </Typography>
-        )}
-        {comments.map((c) => {
-          const commentAuthor =
-            c.authorId === currentUser.id ? currentUser : userMap[c.authorId];
-          return (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+          <CircularProgress size={28} />
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+          {comments.length === 0 && (
+            <Typography variant="body2" color="text.disabled">
+              No comments yet. Be the first!
+            </Typography>
+          )}
+          {comments.map((c) => (
             <Box key={c.id} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
               <Avatar
-                src={commentAuthor?.avatarUrl ?? `https://i.pravatar.cc/150?u=${c.authorId}`}
+                src={`https://i.pravatar.cc/150?u=${c.authorId}`}
                 sx={{ width: 32, height: 32, mt: 0.25 }}
               />
               <Box
@@ -95,16 +92,16 @@ export default function CommentsPage() {
                 }}
               >
                 <Typography variant="caption" fontWeight={600} display="block">
-                  {commentAuthor?.name ?? c.authorId}
+                  {c.authorId}
                 </Typography>
                 <Typography variant="body2" sx={{ fontSize: 13 }}>
                   {c.text}
                 </Typography>
               </Box>
             </Box>
-          );
-        })}
-      </Box>
+          ))}
+        </Box>
+      )}
 
       {/* Add comment */}
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
@@ -122,10 +119,10 @@ export default function CommentsPage() {
               <IconButton
                 size="small"
                 onClick={handleSubmit}
-                disabled={!commentText.trim()}
+                disabled={!commentText.trim() || submitting}
                 edge="end"
               >
-                <SendIcon fontSize="small" />
+                {submitting ? <CircularProgress size={14} /> : <SendIcon fontSize="small" />}
               </IconButton>
             </InputAdornment>
           }
