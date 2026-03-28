@@ -21,6 +21,7 @@ class CommentController {
             }
 
             const comment = await commentRepository.createComment({ sender, content, postId: postId });
+            await postRepository.incrementCommentsCount(postId);
 
             return res.status(200).json(comment);
         } catch (err) {
@@ -50,7 +51,11 @@ class CommentController {
                 return res.status(400).json({ message: `Invalid comment ID: ${id}` });
             }
 
+            const comment = await commentRepository.getCommentById(id);
             await commentRepository.deleteCommentById(id);
+            if (comment) {
+                await postRepository.decrementCommentsCount(String(comment.postId));
+            }
 
             return res.status(200).json({ message: `Successfully deleted comment ${id}` });
         } catch (err) {

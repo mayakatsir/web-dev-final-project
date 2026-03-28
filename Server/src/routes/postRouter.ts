@@ -11,6 +11,9 @@ postRouter.get('/:id',postController.getPostById );
 
 postRouter.put('/:id', postController.updatePost );
 
+postRouter.post('/:id/like', postController.likePost);
+postRouter.delete('/:id/like', postController.unlikePost);
+
 postRouter.delete('/:id',postController.deletePostById );
 
 export default postRouter;

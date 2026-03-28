@@ -1,17 +1,19 @@
+import { useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { useNavigate } from 'react-router-dom';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
+import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import type { Recipe, User } from '../types'; // User kept for optional author prop
+
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&h=400&fit=crop';
 
 interface Props {
   recipe: Recipe;
@@ -39,7 +41,9 @@ function timeAgo(dateStr: string): string {
   const days = Math.floor(diff / 86_400_000);
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
-  return `${days}d ago`;
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
 }
 
 export default function RecipeFeedCard({ recipe, author, commentCount, liked, onLike }: Props) {
@@ -50,46 +54,112 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
   const avatarSrc = author?.avatarUrl ?? `https://i.pravatar.cc/150?u=${recipe.authorId}`;
 
   return (
-    <Card elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 3 }}>
+    <Card>
       {/* Author row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, pb: 1.5 }}>
-        <Avatar src={avatarSrc} alt={displayName} sx={{ width: 40, height: 40 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle2" fontWeight={600} lineHeight={1.2}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
+        <Avatar src={avatarSrc} alt={displayName} sx={{ width: 42, height: 42 }} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="subtitle2" fontWeight={700} lineHeight={1.2} noWrap>
             {displayName}
           </Typography>
           <Typography variant="caption" color="text.disabled">
             @{displayUsername} · {timeAgo(recipe.postedAt)}
           </Typography>
         </Box>
-        <Chip
-          label={recipe.category}
-          size="small"
-          variant="outlined"
-          sx={{ fontSize: 11 }}
-        />
+        {recipe.category && (
+          <Chip
+            label={recipe.category}
+            size="small"
+            variant="outlined"
+            color="primary"
+            sx={{ flexShrink: 0 }}
+          />
+        )}
       </Box>
 
       {/* Image */}
       <CardMedia
         component="img"
-        image={recipe.imageUrl}
+        image={recipe.imageUrl || FALLBACK_IMAGE}
         alt={recipe.title}
-        sx={{ aspectRatio: '16/9', objectFit: 'cover' }}
+        sx={{ aspectRatio: '4/3', objectFit: 'cover' }}
       />
 
-      {/* Body */}
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ fontSize: 17 }}>
+      {/* Like / comment actions */}
+      <Box sx={{ px: 1, pt: 0.75, pb: 0, display: 'flex', gap: 0.25 }}>
+        <Button
+          size="small"
+          startIcon={
+            liked ? (
+              <FavoriteRoundedIcon sx={{ fontSize: '18px !important' }} />
+            ) : (
+              <FavoriteBorderRoundedIcon sx={{ fontSize: '18px !important' }} />
+            )
+          }
+          onClick={onLike}
+          sx={{
+            color: liked ? 'error.main' : 'text.secondary',
+            fontWeight: liked ? 700 : 500,
+            fontSize: 13,
+            px: 1,
+            '&:hover': { color: 'error.main', bgcolor: 'transparent' },
+          }}
+        >
+          {recipe.likesCount}
+        </Button>
+        <Button
+          size="small"
+          startIcon={
+            <ChatBubbleOutlineRoundedIcon sx={{ fontSize: '17px !important' }} />
+          }
+          onClick={() => navigate(`/recipe/${recipe.id}`)}
+          sx={{
+            color: 'text.secondary',
+            fontWeight: 500,
+            fontSize: 13,
+            px: 1,
+            '&:hover': { color: 'primary.main', bgcolor: 'transparent' },
+          }}
+        >
+          {commentCount ?? 0}
+        </Button>
+      </Box>
+
+      {/* Title + description + meta */}
+      <Box sx={{ px: 2, pt: 1, pb: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: 17,
+            lineHeight: 1.35,
+            mb: 0.5,
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {recipe.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mb: 1.5,
+            lineHeight: 1.55,
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {recipe.description}
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+            <AccessTimeRoundedIcon sx={{ fontSize: 13, color: 'text.disabled' }} />
             <Typography variant="caption" color="text.secondary">
               {formatCookingTime(recipe.cookingTime)}
             </Typography>
@@ -99,39 +169,7 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
             size="small"
             color={difficultyColor[recipe.difficulty]}
             variant="outlined"
-            sx={{ height: 20, fontSize: 11 }}
           />
-        </Box>
-
-        <Divider sx={{ mb: 1 }} />
-
-        {/* Actions */}
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Button
-            size="small"
-            startIcon={liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-            onClick={onLike}
-            sx={{
-              textTransform: 'none',
-              color: liked ? 'error.main' : 'text.secondary',
-              fontWeight: liked ? 600 : 400,
-              '&:hover': { color: 'error.main', bgcolor: 'error.50' },
-            }}
-          >
-            {recipe.likesCount + (liked ? 1 : 0)}
-          </Button>
-          <Button
-            size="small"
-            startIcon={<ChatBubbleOutlineIcon />}
-            onClick={() => navigate(`/recipe/${recipe.id}`)}
-            sx={{
-              textTransform: 'none',
-              color: 'text.secondary',
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            {commentCount ?? 0} {(commentCount ?? 0) === 1 ? 'comment' : 'comments'}
-          </Button>
         </Box>
       </Box>
     </Card>

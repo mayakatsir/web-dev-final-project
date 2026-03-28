@@ -4,7 +4,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import type { Recipe } from '../types';
-import { fetchAllPosts } from '../api/postsApi';
+import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
+import { currentUser } from '../data/mockData';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const PAGE_SIZE = 6;
@@ -21,7 +22,10 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchAllPosts()
-      .then(setRecipes)
+      .then((posts) => {
+        setRecipes(posts);
+        setLikes(new Set(posts.filter((p) => p.likedBy.includes(currentUser.id)).map((p) => p.id)));
+      })
       .catch(console.error)
       .finally(() => setPageLoading(false));
   }, []);
@@ -48,33 +52,55 @@ export default function HomePage() {
   }, [hasMore, loading, recipes.length]);
 
   function toggleLike(recipeId: string) {
+    const alreadyLiked = likes.has(recipeId);
+
     setLikes((prev) => {
       const next = new Set(prev);
-      next.has(recipeId) ? next.delete(recipeId) : next.add(recipeId);
+      alreadyLiked ? next.delete(recipeId) : next.add(recipeId);
       return next;
     });
+    setRecipes((prev) =>
+      prev.map((r) =>
+        r.id === recipeId ? { ...r, likesCount: r.likesCount + (alreadyLiked ? -1 : 1) } : r,
+      ),
+    );
+
+    if (alreadyLiked) {
+      unlikePost(recipeId, currentUser.id).catch(console.error);
+    } else {
+      likePost(recipeId, currentUser.id).catch(console.error);
+    }
   }
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Typography variant="h6" fontWeight={700} gutterBottom sx={{ mb: 3 }}>
+      <Typography
+        variant="h5"
+        sx={{ mb: 3, fontSize: { xs: 22, sm: 26 } }}
+      >
         What's cooking today
       </Typography>
 
       {pageLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+          <CircularProgress sx={{ color: 'primary.main' }} />
         </Box>
       ) : recipes.length === 0 ? (
-        <Typography variant="body2" color="text.disabled" sx={{ textAlign: 'center', py: 6 }}>
-          No recipes yet. Be the first to post one!
-        </Typography>
+        <Box sx={{ textAlign: 'center', py: 10 }}>
+          <Typography variant="h6" color="text.disabled" sx={{ mb: 1, fontSize: 40 }}>
+            🍳
+          </Typography>
+          <Typography variant="body2" color="text.disabled">
+            No recipes yet. Be the first to share one!
+          </Typography>
+        </Box>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {recipes.slice(0, visibleCount).map((recipe) => (
             <RecipeFeedCard
               key={recipe.id}
               recipe={recipe}
+              commentCount={recipe.commentsCount}
               liked={likes.has(recipe.id)}
               onLike={() => toggleLike(recipe.id)}
             />
@@ -82,11 +108,11 @@ export default function HomePage() {
         </Box>
       )}
 
-      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        {loading && <CircularProgress size={28} />}
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+        {loading && <CircularProgress size={26} sx={{ color: 'primary.main' }} />}
         {!hasMore && !loading && !pageLoading && recipes.length > 0 && (
           <Typography variant="caption" color="text.disabled">
-            You're all caught up
+            You're all caught up ✓
           </Typography>
         )}
       </Box>

@@ -35,6 +35,28 @@ class PostRepository {
     await postModel.findByIdAndUpdate(id, updates);
   }
 
+  async incrementCommentsCount(postId: string) {
+    await postModel.updateOne({ _id: postId }, { $inc: { commentsCount: 1 } });
+  }
+
+  async decrementCommentsCount(postId: string) {
+    await postModel.updateOne({ _id: postId, commentsCount: { $gt: 0 } }, { $inc: { commentsCount: -1 } });
+  }
+
+  async likePost(postId: string, userId: string) {
+    await postModel.updateOne(
+      { _id: postId, likedBy: { $ne: userId } },
+      { $addToSet: { likedBy: userId }, $inc: { likesCount: 1 } },
+    );
+  }
+
+  async unlikePost(postId: string, userId: string) {
+    await postModel.updateOne(
+      { _id: postId, likedBy: userId },
+      { $pull: { likedBy: userId }, $inc: { likesCount: -1 } },
+    );
+  }
+
   async deletePostById(postId: string) {
     await postModel.deleteOne({ _id: postId });
   }

@@ -20,6 +20,8 @@ export interface Recipe {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   imageUrl: string;
   likesCount: number;
+  likedBy: string[];
+  commentsCount: number;
   postedAt: string;
 }
 
