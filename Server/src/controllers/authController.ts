@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { generateToken } from "../services/auth";
 import userRepository from "../repositories/userRepository";
 import { getConfig } from "../services/config";
+import { signInWithGoogle } from "../bl/google";
 
 const config = getConfig();
 
@@ -67,6 +68,19 @@ async login (req: Request, res: Response) {
     } catch (error) {
         return res.status(400).send({ message: `Login failed` });
     }
+};
+
+async googleLogin (req: Request, res: Response) {
+    const credential = req.body.credential;
+
+    if (!credential) {
+        res.status(400).json({ message: '`credential` body param is missing' });
+
+        return;
+    }
+
+    const data = await signInWithGoogle(credential);
+    res.status(200).json(data);
 };
 
 async refreshToken (req: Request, res: Response) {

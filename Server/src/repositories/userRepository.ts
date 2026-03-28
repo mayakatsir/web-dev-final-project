@@ -40,6 +40,10 @@ class UserRepository {
         return (await userModel.countDocuments({ username })) > 0
     }
 
+    async getUserByEmail(email: string) {
+        return await userModel.findOne({ email }).select('-__v');
+    }
+
 }
 
 export default new UserRepository();

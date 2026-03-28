@@ -7,6 +7,7 @@ type Config = {
     ACCESS_TOKEN_EXPIRES_SEC: number;
     JWT_ACCESS_SECRET: string;
     JWT_REFRESH_SECRET: string;
+    GOOGLE_CLIENT_ID: string;
 };
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
@@ -16,6 +17,7 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
     'ACCESS_TOKEN_EXPIRES_SEC',
     'REFRESH_TOKEN_EXPIRES_SEC',
     'JWT_REFRESH_SECRET',
+    'GOOGLE_CLIENT_ID'
 ];
 
 
@@ -35,6 +37,7 @@ export const getConfig = () => {
             ACCESS_TOKEN_EXPIRES_SEC: parseInt(env.ACCESS_TOKEN_EXPIRES_SEC) || 60*60*24,
             JWT_ACCESS_SECRET: env.JWT_ACCESS_SECRET,
             JWT_REFRESH_SECRET: env.JWT_REFRESH_SECRET,
+            GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
         };
     }
     
