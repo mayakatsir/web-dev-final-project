@@ -14,7 +14,7 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => 
     }
 
     const token = authHeader.split(" ")[1];
-    const secret: string = config.JWT_REFRESH_SECRET;
+    const secret: string = config.JWT_ACCESS_SECRET;
 
     try {
         const decoded = jwt.verify(token, secret) as { userId: string };
