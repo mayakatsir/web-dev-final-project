@@ -8,6 +8,7 @@ type Config = {
     JWT_ACCESS_SECRET: string;
     JWT_REFRESH_SECRET: string;
     GOOGLE_CLIENT_ID: string;
+    OPENAI_API_KEY: string;
 };
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
@@ -17,7 +18,8 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
     'ACCESS_TOKEN_EXPIRES_SEC',
     'REFRESH_TOKEN_EXPIRES_SEC',
     'JWT_REFRESH_SECRET',
-    'GOOGLE_CLIENT_ID'
+    'GOOGLE_CLIENT_ID',
+    'OPENAI_API_KEY'
 ];
 
 
@@ -38,6 +40,7 @@ export const getConfig = () => {
             JWT_ACCESS_SECRET: env.JWT_ACCESS_SECRET,
             JWT_REFRESH_SECRET: env.JWT_REFRESH_SECRET,
             GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+            OPENAI_API_KEY: env.OPENAI_API_KEY,
         };
     }
     

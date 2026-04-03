@@ -16,6 +16,7 @@ const commentSchema = new Schema({
     },
     postedAt: {
         type: String,
+        required: false,
         default: () => new Date().toISOString(),
     },
 });
