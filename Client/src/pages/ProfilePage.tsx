@@ -9,13 +9,13 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { Recipe, User } from '../types';
-import { currentUser } from '../data/mockData';
+import type { Recipe } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { updateProfileApi } from '../api/userApi';
 import { createPost, deletePost, fetchUserPosts, updatePost } from '../api/postsApi';
 import EditProfileModal from '../components/EditProfileModal';
 import EditRecipeModal from '../components/EditRecipeModal';
@@ -25,7 +25,7 @@ const PAGE_SIZE = 9;
 
 const BLANK_RECIPE: Recipe = {
   id: '',
-  authorId: currentUser.id,
+  authorId: '',
   title: '',
   description: '',
   category: 'General',
@@ -134,7 +134,7 @@ const styles = {
 } satisfies Record<string, SxProps<Theme>>;
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User>(currentUser);
+  const { user, token, updateUser } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -147,11 +147,12 @@ export default function ProfilePage() {
   const hasMore = visibleCount < recipes.length;
 
   useEffect(() => {
-    fetchUserPosts(currentUser.id).then((posts) => {
+    if (!user) return;
+    fetchUserPosts(user._id).then((posts) => {
       setRecipes(posts);
       setPageLoading(false);
     });
-  }, []);
+  }, [user?._id]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -174,17 +175,25 @@ export default function ProfilePage() {
     return () => observer.disconnect();
   }, [hasMore, loading, recipes.length]);
 
+  if (!user) return null;
+
   async function handleSaveRecipe(
     id: string,
     updated: Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>,
   ) {
     if (id === '') {
-      const newRecipe = await createPost(updated, currentUser.id);
+      const newRecipe = await createPost(updated, user._id);
       setRecipes((prev) => [newRecipe, ...prev]);
     } else {
-      await updatePost(id, updated, currentUser.id);
+      await updatePost(id, updated, user._id);
       setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
     }
+  }
+
+  async function handleSaveProfile(updates: Pick<import('../context/AuthContext').AuthUser, 'name' | 'username' | 'bio' | 'avatarUrl'>) {
+    if (!token) return;
+    const updated = await updateProfileApi(user._id, updates, token);
+    updateUser(updated);
   }
 
   async function handleDeleteRecipe() {
@@ -236,18 +245,13 @@ export default function ProfilePage() {
             {user.bio}
           </Typography>
         )}
-        <Typography variant="caption" color="text.disabled">
-          Joined {user.joinedDate}
-        </Typography>
       </Box>
 
       {/* Stats */}
       <Box sx={styles.statsBox}>
         {[
           { value: recipes.length, label: 'Recipes' },
-          { value: user.followersCount.toLocaleString(), label: 'Followers' },
-          { value: user.followingCount, label: 'Following' },
-        ].map((stat, i) => (
+        ].map((stat) => (
           <Box key={stat.label}>
             <Box sx={styles.statCell}>
               <Typography variant="h6" sx={styles.statValue}>
@@ -261,9 +265,6 @@ export default function ProfilePage() {
                 {stat.label}
               </Typography>
             </Box>
-            {i < 2 && (
-              <Divider orientation="vertical" flexItem sx={{ position: 'absolute' }} />
-            )}
           </Box>
         ))}
       </Box>
@@ -336,7 +337,7 @@ export default function ProfilePage() {
         open={editOpen}
         user={user}
         onClose={() => setEditOpen(false)}
-        onSave={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
+        onSave={handleSaveProfile}
       />
 
       <EditRecipeModal
