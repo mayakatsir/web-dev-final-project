@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { Recipe } from '../types';
 import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
-import { currentUser } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 
 const PAGE_SIZE = 6;
@@ -20,6 +20,7 @@ const styles = {
 } satisfies Record<string, SxProps<Theme>>;
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
@@ -32,12 +33,13 @@ export default function HomePage() {
   useEffect(() => {
     fetchAllPosts()
       .then((posts) => {
-        setRecipes(posts);
-        setLikes(new Set(posts.filter((p) => p.likedBy.includes(currentUser.id)).map((p) => p.id)));
+        setRecipes(posts.slice().sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()));
+        const uid = user?._id ?? '';
+        setLikes(new Set(posts.filter((p) => uid && p.likedBy.includes(uid)).map((p) => p.id)));
       })
       .catch(console.error)
       .finally(() => setPageLoading(false));
-  }, []);
+  }, [user?._id]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -74,10 +76,11 @@ export default function HomePage() {
       ),
     );
 
+    const uid = user?._id ?? '';
     if (alreadyLiked) {
-      unlikePost(recipeId, currentUser.id).catch(console.error);
+      unlikePost(recipeId, uid).catch(console.error);
     } else {
-      likePost(recipeId, currentUser.id).catch(console.error);
+      likePost(recipeId, uid).catch(console.error);
     }
   }
 

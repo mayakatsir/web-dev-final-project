@@ -13,7 +13,7 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { Comment } from '../types';
-import { currentUser } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
 import { createComment, fetchComments } from '../api/commentsApi';
 
 const styles = {
@@ -45,6 +45,7 @@ const styles = {
 } satisfies Record<string, SxProps<Theme>>;
 
 export default function CommentsPage() {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -67,7 +68,7 @@ export default function CommentsPage() {
 
     setSubmitting(true);
     try {
-      const newComment = await createComment(id, currentUser.id, trimmed);
+      const newComment = await createComment(id, user?._id ?? '', trimmed);
       setComments((prev) => [...prev, newComment]);
       setCommentText('');
     } catch (err) {
@@ -110,13 +111,13 @@ export default function CommentsPage() {
           )}
 
           {comments.map((c) => {
-            const isMe = c.authorId === currentUser.id;
+            const isMe = c.authorId === user?._id;
             return (
               <Box key={c.id} sx={styles.commentRow}>
                 <Avatar
                   src={
                     isMe
-                      ? currentUser.avatarUrl
+                      ? user?.avatarUrl
                       : `https://i.pravatar.cc/150?u=${c.authorId}`
                   }
                   sx={{ width: 34, height: 34, mt: 0.25, flexShrink: 0 }}
@@ -140,7 +141,7 @@ export default function CommentsPage() {
                     color={isMe ? 'primary.dark' : 'text.primary'}
                     sx={{ mb: 0.25 }}
                   >
-                    {isMe ? currentUser.name : c.authorId}
+                    {isMe ? (user?.name || user?.username) : c.authorId}
                   </Typography>
                   <Typography variant="body2" sx={{ fontSize: 13.5, lineHeight: 1.5 }}>
                     {c.text}
@@ -155,8 +156,8 @@ export default function CommentsPage() {
       {/* Sticky comment input */}
       <Box sx={styles.stickyInput}>
         <Avatar
-          src={currentUser.avatarUrl}
-          alt={currentUser.name}
+          src={user?.avatarUrl}
+          alt={user?.name ?? user?.username}
           sx={{ width: 34, height: 34, flexShrink: 0 }}
         />
         <OutlinedInput

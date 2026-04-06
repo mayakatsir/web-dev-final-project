@@ -1,13 +1,16 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { currentUser } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
 
 const styles = {
   appBar: { bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' },
@@ -39,6 +42,14 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    navigate('/login');
+  }
+
   return (
     <AppBar
       position="sticky"
@@ -86,11 +97,18 @@ export default function Navbar() {
         {/* Avatar */}
         <NavLink to="/profile" style={{ textDecoration: 'none', display: 'flex' }}>
           <Avatar
-            src={currentUser.avatarUrl}
-            alt={currentUser.name}
+            src={user?.avatarUrl}
+            alt={user?.name ?? user?.username}
             sx={styles.avatar}
           />
         </NavLink>
+
+        {/* Logout */}
+        <Tooltip title="Logout">
+          <IconButton size="small" onClick={handleLogout} sx={{ ml: 0.5, color: 'text.secondary' }}>
+            <LogoutRoundedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );
