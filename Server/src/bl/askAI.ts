@@ -13,3 +13,8 @@ export const askAI = async (prompt: string): Promise<string> => {
 
     return answer;
 };
+
+export const recommendRecipe = async (ingredients: string): Promise<string> => {
+    const prompt = `I have the following ingredients: ${ingredients}.\nSuggest one recipe I can make with some or all of them. Include the recipe name, a short description, and step-by-step instructions. Keep it concise.`;
+    return askAI(prompt);
+};
