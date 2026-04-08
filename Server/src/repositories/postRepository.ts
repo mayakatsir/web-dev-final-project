@@ -1,5 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { Post, postModel } from '../models/post';
+import { userModel } from '../models/user';
 
 class PostRepository {
   async createPost(data: {
@@ -28,7 +29,18 @@ class PostRepository {
       filters.sender = query.sender;
     }
 
-    return await postModel.find(filters).select('-__v');
+    const posts = await postModel.find(filters).select('-__v').lean();
+
+    const senderIds = [...new Set(posts.map((p) => p.sender))];
+    const users = await userModel.find({ _id: { $in: senderIds } }).select('username name avatarUrl').lean();
+    const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
+
+    return posts.map((p) => ({
+      ...p,
+      senderUsername: userMap[p.sender]?.username ?? p.sender,
+      senderName: userMap[p.sender]?.name ?? '',
+      senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
+    }));
   }
 
   async updatePost(id: string, updates: Partial<Post>) {
