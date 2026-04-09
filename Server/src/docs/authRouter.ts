@@ -73,7 +73,7 @@
  * @swagger
  * /auth/logout:
  *   post:
- *     summary: Logout a user 
+ *     summary: Logout a user
  *     description: Logout user and invalidate the refresh token
  *     tags: [Auth]
  *     requestBody:
@@ -87,4 +87,36 @@
  *         description: Successful logout
  *       400:
  *         description: Invalid refresh token
+ */
+
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Sign in with Google
+ *     description: Authenticate a user using a Google OAuth credential token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [credential]
+ *             properties:
+ *               credential:
+ *                 type: string
+ *                 description: Google OAuth ID token obtained from Google Sign-In
+ *                 example: eyJhbGciOiJSUzI1NiIsImtpZCI6Ii...
+ *     responses:
+ *       200:
+ *         description: Successful Google login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tokens'
+ *       400:
+ *         description: Missing or invalid Google credential
+ *       500:
+ *         description: Internal server error
  */

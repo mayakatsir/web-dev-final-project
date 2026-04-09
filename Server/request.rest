@@ -129,6 +129,57 @@ POST {{baseUrl}}/auth/logout
 Content-Type: application/json
 
 {
-  "refreshToken": 
+  "refreshToken":
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTY0MjYxZWRjYzYyYWYxNmUzMjRkN2YiLCJpYXQiOjE3NjgxNzEwMzgsImV4cCI6MTc2ODE3MjAzOH0.FXrugt42amciUcH0kvwEvq-7hYnZkyBCsX0j1xwovN8"
+}
+
+### Google Login
+POST {{baseUrl}}/auth/google
+Content-Type: application/json
+
+{
+  "credential": "<paste-google-id-token-here>"
+}
+
+
+########LIKES##########
+### Get liked posts by user
+GET {{baseUrl}}/post/liked/{{userId}}
+
+### Like a post
+POST {{baseUrl}}/post/{{postId}}/like
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+### Unlike a post
+DELETE {{baseUrl}}/post/{{postId}}/like
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+
+########AI##########
+### Ask AI a question
+GET {{baseUrl}}/ask-ai?prompt=Give me a quick pasta recipe
+
+### Recommend recipe from ingredients
+POST {{baseUrl}}/ask-ai/recommend
+Content-Type: application/json
+
+{
+  "ingredients": "eggs, tomatoes, cheese, onion"
+}
+
+### Recommend recipe from favorites
+POST {{baseUrl}}/ask-ai/recommend-from-favorites
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "mealType": "Dinner"
 }
