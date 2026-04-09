@@ -9,7 +9,7 @@ export const askAI = async (prompt: string): Promise<string> => {
     });
 
     const answer = completion.choices[0]?.message?.content;
-    if (!answer) throw new Error('No response from ChatGPT');
+    if (!answer) throw new Error('Failed to get response from ChatGPT');
 
     return answer;
 };
