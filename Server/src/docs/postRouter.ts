@@ -91,6 +91,101 @@
 
 /**
  * @swagger
+ * /post/liked/{userId}:
+ *   get:
+ *     summary: Get all posts liked by a user
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Id of the user
+ *         example: 654069829c3ed9c63eda75b1
+ *     responses:
+ *       200:
+ *         description: List of liked posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Invalid userId
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /post/{id}/like:
+ *   post:
+ *     summary: Like a post
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Id of the post to like
+ *         example: 674069829f3ed9c93edb75b0
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userId]
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: 654069829c3ed9c63eda75b1
+ *     responses:
+ *       200:
+ *         description: Liked successfully
+ *       400:
+ *         description: Invalid post id or missing userId
+ *       500:
+ *         description: Internal server error
+ *   delete:
+ *     summary: Unlike a post
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Id of the post to unlike
+ *         example: 674069829f3ed9c93edb75b0
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userId]
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: 654069829c3ed9c63eda75b1
+ *     responses:
+ *       200:
+ *         description: Unliked successfully
+ *       400:
+ *         description: Invalid post id or missing userId
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
  * /posts:
  *   get:
  *     summary: Get all posts
