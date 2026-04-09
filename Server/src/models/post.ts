@@ -48,5 +48,7 @@ const postSchema = new Schema({
   },
 });
 
+postSchema.index({ category: 1, likesCount: -1 });
+
 export const postModel = model('post', postSchema);
 export type Post = InferSchemaType<typeof postSchema>;

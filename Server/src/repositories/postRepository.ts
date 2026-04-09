@@ -71,6 +71,18 @@ class PostRepository {
     await userModel.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
   }
 
+  async getTopLikedPostsByCategory(userId: string, category: string, limit: number) {
+    const user = await userModel.findById(userId).select('likedPosts').lean();
+    if (!user || !user.likedPosts?.length) return [];
+    const posts = await postModel
+      .find({ _id: { $in: user.likedPosts }, category: { $regex: new RegExp(`^${category}$`, 'i') } })
+      .sort({ likesCount: -1 })
+      .limit(limit)
+      .select('-__v')
+      .lean();
+    return posts;
+  }
+
   async getLikedPosts(userId: string) {
     const user = await userModel.findById(userId).select('likedPosts').lean();
     if (!user || !user.likedPosts?.length) return [];
