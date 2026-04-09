@@ -7,6 +7,9 @@ interface ServerPost {
   title: string;
   description: string;
   sender: string;
+  senderUsername?: string;
+  senderName?: string;
+  senderAvatar?: string;
   category: string;
   cookingTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
@@ -21,6 +24,9 @@ function toRecipe(post: ServerPost): Recipe {
   return {
     id: post._id,
     authorId: post.sender,
+    authorUsername: post.senderUsername ?? post.sender,
+    authorName: post.senderName ?? '',
+    authorAvatar: post.senderAvatar ?? '',
     title: post.title,
     description: post.description ?? '',
     imageUrl: post.imageUrl ?? '',
