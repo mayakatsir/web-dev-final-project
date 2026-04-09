@@ -19,6 +19,7 @@ interface Props {
   recipe: Recipe;
   onEdit?: () => void;
   onDelete?: () => void;
+  onClick?: () => void;
 }
 
 const difficultyColor: Record<Recipe['difficulty'], 'success' | 'warning' | 'error'> = {
@@ -96,9 +97,9 @@ const styles = {
   footerLikes: { display: 'flex', alignItems: 'center', gap: 0.4 },
 } satisfies Record<string, SxProps<Theme>>;
 
-export default function RecipeCard({ recipe, onEdit, onDelete }: Props) {
+export default function RecipeCard({ recipe, onEdit, onDelete, onClick }: Props) {
   return (
-    <Card sx={styles.card}>
+    <Card sx={styles.card} onClick={onClick}>
       {/* Image with gradient + overlay */}
       <Box sx={styles.imageWrapper}>
         <CardMedia
