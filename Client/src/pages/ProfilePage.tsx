@@ -128,6 +128,7 @@ export default function ProfilePage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnswer, setAiAnswer] = useState('');
   const [aiResultOpen, setAiResultOpen] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const activeList = tab === 'mine' ? recipes : favorites;
   const hasMore = visibleCount < activeList.length;
@@ -171,6 +172,7 @@ export default function ProfilePage() {
   async function handleGenerateFromFavorites() {
     if (!selectedMeal) return;
     setAiLoading(true);
+    setAiError('');
     setMealDialogOpen(false);
     try {
       const res = await fetch('http://localhost:8080/ask-ai/recommend-from-favorites', {
@@ -179,10 +181,15 @@ export default function ProfilePage() {
         body: JSON.stringify({ userId: user!._id, mealType: selectedMeal }),
       });
       const data = await res.json();
-      setAiAnswer(data.answer ?? 'No response received.');
-      setAiResultOpen(true);
+      if (!res.ok) {
+        setAiError(data.message ?? 'Failed to generate.');
+        setAiResultOpen(true);
+      } else {
+        setAiAnswer(data.answer ?? 'No response received.');
+        setAiResultOpen(true);
+      }
     } catch {
-      setAiAnswer('Failed to generate. Please try again.');
+      setAiError('Something went wrong. Please try again.');
       setAiResultOpen(true);
     } finally {
       setAiLoading(false);
@@ -411,11 +418,16 @@ export default function ProfilePage() {
       </Dialog>
 
       {/* AI result dialog */}
-      <Dialog open={aiResultOpen} onClose={() => setAiResultOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontFamily: "'Fredoka One', cursive", color: 'primary.main', fontSize: 22 }}>
-          Your Personalized Recipe
+      <Dialog open={aiResultOpen} onClose={() => { setAiResultOpen(false); setAiError(''); setAiAnswer(''); }} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontFamily: "'Fredoka One', cursive", color: aiError ? 'error.main' : 'primary.main', fontSize: 22 }}>
+          {aiError ? 'Oops!' : 'Your Personalized Recipe'}
         </DialogTitle>
         <DialogContent>
+          {aiError ? (
+            <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+              {aiError}
+            </Typography>
+          ) : (
           <Box sx={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.7 }}>
             {aiAnswer.split('\n').map((line, i) => {
               const trimmed = line.trim();
@@ -448,6 +460,7 @@ export default function ProfilePage() {
               return <Typography key={i} variant="body2" sx={{ lineHeight: 1.7, mb: 0.25 }}>{trimmed}</Typography>;
             })}
           </Box>
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setAiResultOpen(false)} variant="contained" sx={{ borderRadius: 50 }}>Done</Button>
