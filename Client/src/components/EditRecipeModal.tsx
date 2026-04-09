@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
 import type { Recipe } from '../types';
+import { RECIPE_CATEGORIES } from '../data/categories';
 
 interface Props {
   open: boolean;
@@ -104,7 +105,7 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
       title: title.trim(),
       description: description.trim(),
       imageUrl,
-      category: category.trim(),
+      category,
       cookingTime,
       difficulty,
     });
@@ -164,14 +165,17 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
           />
           <Box sx={styles.categoryRow}>
             <TextField
+              select
               label="Category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               size="small"
               fullWidth
-              placeholder="e.g. Pasta, Dessert…"
-              slotProps={{ htmlInput: { maxLength: 40 } }}
-            />
+            >
+              {RECIPE_CATEGORIES.map((c) => (
+                <MenuItem key={c} value={c}>{c}</MenuItem>
+              ))}
+            </TextField>
             <TextField
               select
               label="Difficulty"

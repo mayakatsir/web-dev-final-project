@@ -60,6 +60,7 @@ class PostRepository {
       { _id: postId, likedBy: { $ne: userId } },
       { $addToSet: { likedBy: userId }, $inc: { likesCount: 1 } },
     );
+    await userModel.updateOne({ _id: userId }, { $addToSet: { likedPosts: postId } });
   }
 
   async unlikePost(postId: string, userId: string) {
@@ -67,6 +68,22 @@ class PostRepository {
       { _id: postId, likedBy: userId },
       { $pull: { likedBy: userId }, $inc: { likesCount: -1 } },
     );
+    await userModel.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
+  }
+
+  async getLikedPosts(userId: string) {
+    const user = await userModel.findById(userId).select('likedPosts').lean();
+    if (!user || !user.likedPosts?.length) return [];
+    const posts = await postModel.find({ _id: { $in: user.likedPosts } }).select('-__v').lean();
+    const senderIds = [...new Set(posts.map((p) => p.sender))];
+    const users = await userModel.find({ _id: { $in: senderIds } }).select('username name avatarUrl').lean();
+    const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
+    return posts.map((p) => ({
+      ...p,
+      senderUsername: userMap[p.sender]?.username ?? p.sender,
+      senderName: userMap[p.sender]?.name ?? '',
+      senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
+    }));
   }
 
   async deletePostById(postId: string) {

@@ -76,6 +76,12 @@ export async function deletePost(id: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${id}`, { method: 'DELETE' });
 }
 
+export async function fetchLikedPosts(userId: string): Promise<Recipe[]> {
+  const res = await fetch(`${BASE_URL}/post/liked/${encodeURIComponent(userId)}`);
+  const data = await res.json();
+  return (data.posts as ServerPost[]).map(toRecipe);
+}
+
 export async function likePost(postId: string, userId: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${postId}/like`, {
     method: 'POST',

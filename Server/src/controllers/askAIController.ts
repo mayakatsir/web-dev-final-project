@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { askAI, recommendRecipe } from '../bl/askAI';
+import { askAI, recommendRecipe, recommendFromFavorites } from '../bl/askAI';
+import PostRepository from '../repositories/postRepository';
 
 class AskAIController {
     async ask(req: Request, res: Response) {
@@ -33,6 +34,43 @@ class AskAIController {
         } catch (error) {
             console.error('Error getting recipe recommendation:', error);
             res.status(500).json({ message: 'Failed to get recipe recommendation' });
+        }
+    }
+
+    async recommendFromFavorites(req: Request, res: Response) {
+        const { userId, mealType } = req.body;
+
+        if (!userId || typeof userId !== 'string') {
+            res.status(400).json({ message: '`userId` body param is missing' });
+            return;
+        }
+        if (!mealType || typeof mealType !== 'string') {
+            res.status(400).json({ message: '`mealType` body param is missing' });
+            return;
+        }
+
+        try {
+            const likedPosts = await PostRepository.getLikedPosts(userId);
+
+            if (likedPosts.length === 0) {
+                res.status(400).json({ message: 'User has no liked posts to base a recommendation on' });
+                return;
+            }
+
+            const matchingPosts = likedPosts.filter(
+                (p) => p.category?.toLowerCase() === mealType.toLowerCase()
+            );
+            const sourcePosts = matchingPosts.length > 0 ? matchingPosts : likedPosts;
+
+            const descriptions = sourcePosts
+                .map((p) => p.description)
+                .filter((d): d is string => !!d && d.trim().length > 0);
+
+            const answer = await recommendFromFavorites(descriptions, mealType);
+            res.status(200).json({ answer });
+        } catch (error) {
+            console.error('Error generating recipe from favorites:', error);
+            res.status(500).json({ message: 'Failed to generate recipe from favorites' });
         }
     }
 }
