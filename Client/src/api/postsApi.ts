@@ -20,16 +20,22 @@ interface ServerPost {
   postedAt: string;
 }
 
+function resolveImageUrl(raw: string): string {
+  if (!raw) return '';
+  if (raw.startsWith('/uploads/')) return `${BASE_URL}${raw}`;
+  return raw;
+}
+
 function toRecipe(post: ServerPost): Recipe {
   return {
     id: post._id,
     authorId: post.sender,
     authorUsername: post.senderUsername ?? post.sender,
     authorName: post.senderName ?? '',
-    authorAvatar: post.senderAvatar ?? '',
+    authorAvatar: resolveImageUrl(post.senderAvatar ?? ''),
     title: post.title,
     description: post.description ?? '',
-    imageUrl: post.imageUrl ?? '',
+    imageUrl: resolveImageUrl(post.imageUrl ?? ''),
     category: post.category ?? 'General',
     cookingTime: post.cookingTime ?? 30,
     difficulty: post.difficulty ?? 'Easy',
@@ -54,22 +60,48 @@ export async function fetchUserPosts(senderId: string): Promise<Recipe[]> {
 
 type PostFields = Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>;
 
-export async function createPost(fields: PostFields, senderId: string): Promise<Recipe> {
-  const res = await fetch(`${BASE_URL}/post`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...fields, sender: senderId }),
-  });
+export async function createPost(fields: PostFields, senderId: string, imageFile?: File): Promise<Recipe> {
+  let res: Response;
+  if (imageFile) {
+    const form = new FormData();
+    form.append('image', imageFile);
+    form.append('sender', senderId);
+    form.append('title', fields.title);
+    form.append('description', fields.description);
+    form.append('category', fields.category);
+    form.append('cookingTime', String(fields.cookingTime));
+    form.append('difficulty', fields.difficulty);
+    res = await fetch(`${BASE_URL}/post`, { method: 'POST', body: form });
+  } else {
+    res = await fetch(`${BASE_URL}/post`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...fields, sender: senderId }),
+    });
+  }
   const post: ServerPost = await res.json();
   return toRecipe(post);
 }
 
-export async function updatePost(id: string, fields: PostFields, senderId: string): Promise<void> {
-  await fetch(`${BASE_URL}/post/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...fields, sender: senderId }),
-  });
+export async function updatePost(id: string, fields: PostFields, senderId: string, imageFile?: File): Promise<void> {
+  if (imageFile) {
+    const form = new FormData();
+    form.append('image', imageFile);
+    form.append('sender', senderId);
+    form.append('title', fields.title);
+    form.append('description', fields.description);
+    form.append('category', fields.category);
+    form.append('cookingTime', String(fields.cookingTime));
+    form.append('difficulty', fields.difficulty);
+    form.append('imageUrl', fields.imageUrl);
+    await fetch(`${BASE_URL}/post/${id}`, { method: 'PUT', body: form });
+  } else {
+    await fetch(`${BASE_URL}/post/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...fields, sender: senderId }),
+    });
+  }
 }
 
 export async function deletePost(id: string): Promise<void> {

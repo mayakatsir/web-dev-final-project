@@ -5,6 +5,7 @@ import { generateToken } from '../services/auth';
 import userRepository from '../repositories/userRepository';
 import { getConfig } from '../services/config';
 import { signInWithGoogle } from '../bl/google';
+import { uploadToGridFS } from '../services/gridfs';
 
 const config = getConfig();
 
@@ -32,9 +33,15 @@ class AuthController {
         }
 
         try {
+            let avatarUrl = '';
+            if (req.file) {
+                const fileId = await uploadToGridFS(req.file.buffer, req.file.originalname, req.file.mimetype);
+                avatarUrl = `/uploads/${fileId}`;
+            }
+
             const salt = await bcrypt.genSalt(10);
             const encryptedPassword = await bcrypt.hash(password, salt);
-            const user = await userRepository.createUser(username, email, encryptedPassword, username);
+            const user = await userRepository.createUser(username, email, encryptedPassword, username, avatarUrl);
             const tokens = generateToken(user._id.toString());
 
             user.refreshToken.push(tokens.refreshToken);

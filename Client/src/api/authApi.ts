@@ -2,6 +2,16 @@ import type { AuthUser } from '../context/AuthContext';
 
 const BASE_URL = 'http://localhost:8080';
 
+function resolveAvatarUrl(url: string | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('/uploads/')) return `${BASE_URL}${url}`;
+  return url;
+}
+
+function normalizeUser(user: AuthUser): AuthUser {
+  return { ...user, avatarUrl: resolveAvatarUrl(user.avatarUrl) };
+}
+
 interface AuthResponse {
   token: string;
   refreshToken: string;
@@ -16,22 +26,33 @@ export async function loginApi(username: string, password: string): Promise<Auth
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message ?? 'Login failed');
-  return data;
+  return { ...data, user: normalizeUser(data.user) };
 }
 
 export async function registerApi(
   username: string,
   email: string,
   password: string,
+  avatarFile?: File,
 ): Promise<AuthResponse> {
-  const res = await fetch(`${BASE_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password }),
-  });
+  let res: Response;
+  if (avatarFile) {
+    const form = new FormData();
+    form.append('username', username);
+    form.append('email', email);
+    form.append('password', password);
+    form.append('avatar', avatarFile);
+    res = await fetch(`${BASE_URL}/auth/register`, { method: 'POST', body: form });
+  } else {
+    res = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+    });
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.message ?? 'Registration failed');
-  return data;
+  return { ...data, user: normalizeUser(data.user) };
 }
 
 export async function googleLoginApi(credential: string): Promise<AuthResponse> {
@@ -42,7 +63,7 @@ export async function googleLoginApi(credential: string): Promise<AuthResponse> 
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message ?? 'Google login failed');
-  return data;
+  return { ...data, user: normalizeUser(data.user) };
 }
 
 export async function refreshTokenApi(refreshToken: string): Promise<AuthResponse> {
@@ -53,7 +74,7 @@ export async function refreshTokenApi(refreshToken: string): Promise<AuthRespons
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message ?? 'Token refresh failed');
-  return data;
+  return { ...data, user: normalizeUser(data.user) };
 }
 
 export async function logoutApi(refreshToken: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import UserRepository from '../repositories/userRepository';
+import { uploadToGridFS } from '../services/gridfs';
 import { isValidObjectId } from 'mongoose';
 
 class UserController {
@@ -37,11 +38,17 @@ class UserController {
     async updateUser(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { username, email, name, avatarUrl, bio } = req.body;
+            const { username, email, name, bio } = req.body;
+            let { avatarUrl } = req.body;
 
             if (!isValidObjectId(id)) {
                 res.status(400).send({ message: `id: ${id} is not valid` });
                 return;
+            }
+
+            if (req.file) {
+                const fileId = await uploadToGridFS(req.file.buffer, req.file.originalname, req.file.mimetype);
+                avatarUrl = `/uploads/${fileId}`;
             }
 
             if (username) {
