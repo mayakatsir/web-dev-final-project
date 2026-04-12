@@ -1,18 +1,21 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { Express } from 'express';
-import { User, userModel } from '../models/user';
+import { userModel } from '../models/user';
 import { commentModel } from '../models/comment';
 import { postModel } from '../models/post';
 
 let app: Express;
 
-let testUser: User & { _id: string, token: string } = {
+let testUser = {
     username: 'testuser',
     email: 'test@user.com',
     password: 'testpassword',
+    name: '',
+    avatarUrl: '',
+    bio: '',
     token: '',
-    refreshToken: [],
+    refreshToken: [] as string[],
     _id: '',
 };
 
@@ -26,7 +29,8 @@ beforeAll(async () => {
     await userModel.deleteMany();
     await postModel.deleteMany();
 
-    testUser = (await request(app).post('/auth/register').send(testUser)).body;
+    const registerBody = (await request(app).post('/auth/register').send(testUser)).body;
+    testUser._id = registerBody.user._id;
     userId = testUser._id;
 
     const { token, refreshToken } = (
@@ -71,19 +75,19 @@ describe('Posts Tests', () => {
     test('Create a new Post', async () => {
         const {
             statusCode,
-            body: { title, content, _id },
+            body: { title, description, _id },
         } = await request(app)
             .post('/post')
             .set('Authorization', `Bearer ${testUser.token}`)
             .send({
                 title: 'Test new post',
-                content: 'Test new content',
+                description: 'Test new content',
                 sender: userId,
             });
 
         expect(statusCode).toBe(200);
         expect(title).toBe('Test new post');
-        expect(content).toBe('Test new content');
+        expect(description).toBe('Test new content');
         postId = _id;
     });
 
@@ -99,7 +103,7 @@ describe('Posts Tests', () => {
         expect(statusCode).toBe(200);
         expect(posts.length).toBe(1);
         expect(posts[0].title).toBe('Test new post');
-        expect(posts[0].content).toBe('Test new content');
+        expect(posts[0].description).toBe('Test new content');
     });
 
     test('Update post content', async () => {
@@ -110,7 +114,7 @@ describe('Posts Tests', () => {
             .put(`/post/${postId}`)
             .set('Authorization', `Bearer ${testUser.token}`)
             .send({
-                content: 'Different Content',
+                description: 'Different Content',
             });
 
         expect(statusCode).toBe(200);
@@ -145,7 +149,7 @@ describe('Posts Tests', () => {
         const {
             statusCode,
             body: {
-                post: { title, content },
+                post: { title, description },
             },
         } = await request(app)
             .get(`/post/${postId}`)
@@ -153,7 +157,7 @@ describe('Posts Tests', () => {
 
         expect(statusCode).toBe(200);
         expect(title).toBe('Test new post');
-        expect(content).toBe('Different Content');
+        expect(description).toBe('Different Content');
     });
 
     test('Get post with invalid id', async () => {
@@ -171,7 +175,7 @@ describe('Posts Tests', () => {
             .set('Authorization', `Bearer ${testUser.token}`)
             .send({
                 title: 'Second post',
-                content: 'Second content',
+                description: 'Second content',
                 sender: userId,
             });
 
