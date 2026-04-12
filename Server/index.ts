@@ -6,6 +6,7 @@ import authRouter from './src/routes/authRouter';
 import commentRouter from './src/routes/commentRouter';
 import postRouter from './src/routes/postRouter';
 import userRouter from './src/routes/userRouter';
+import askAIRouter from './src/routes/askAIRouter';
 import { getConfig } from './src/services/config';
 import { initializeDBConnection } from './src/services/db';
 
@@ -38,6 +39,7 @@ const main  = async () => {
   app.use("/comment", commentRouter);
   app.use("/user", userRouter)
   app.use("/auth", authRouter)
+  app.use("/ask-ai", askAIRouter)
 
   app.get('/', (req: Request, res: Response) => {
     res.send({ message: 'API is running' });

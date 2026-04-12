@@ -25,3 +25,10 @@
  *   name: Comments
  *   description: The Comments API
  */
+
+/**
+ * @swagger
+ * tags:
+ *   name: AI
+ *   description: The AI API
+ */
