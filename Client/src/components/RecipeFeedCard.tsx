@@ -84,9 +84,9 @@ const styles = {
 export default function RecipeFeedCard({ recipe, author, commentCount, liked, onLike }: Props) {
   const navigate = useNavigate();
 
-  const displayName = author?.name ?? recipe.authorId;
-  const displayUsername = author?.username ?? recipe.authorId;
-  const avatarSrc = author?.avatarUrl ?? `https://i.pravatar.cc/150?u=${recipe.authorId}`;
+  const displayName = author?.name ?? (recipe.authorName || recipe.authorUsername);
+  const displayUsername = author?.username ?? recipe.authorUsername;
+  const avatarSrc = author?.avatarUrl ?? (recipe.authorAvatar || `https://i.pravatar.cc/150?u=${recipe.authorId}`);
 
   return (
     <Card>

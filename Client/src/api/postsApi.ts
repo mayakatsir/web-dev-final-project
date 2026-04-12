@@ -7,6 +7,9 @@ interface ServerPost {
   title: string;
   description: string;
   sender: string;
+  senderUsername?: string;
+  senderName?: string;
+  senderAvatar?: string;
   category: string;
   cookingTime: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
@@ -21,6 +24,9 @@ function toRecipe(post: ServerPost): Recipe {
   return {
     id: post._id,
     authorId: post.sender,
+    authorUsername: post.senderUsername ?? post.sender,
+    authorName: post.senderName ?? '',
+    authorAvatar: post.senderAvatar ?? '',
     title: post.title,
     description: post.description ?? '',
     imageUrl: post.imageUrl ?? '',
@@ -68,6 +74,12 @@ export async function updatePost(id: string, fields: PostFields, senderId: strin
 
 export async function deletePost(id: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchLikedPosts(userId: string): Promise<Recipe[]> {
+  const res = await fetch(`${BASE_URL}/post/liked/${encodeURIComponent(userId)}`);
+  const data = await res.json();
+  return (data.posts as ServerPost[]).map(toRecipe);
 }
 
 export async function likePost(postId: string, userId: string): Promise<void> {

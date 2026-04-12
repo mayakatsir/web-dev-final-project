@@ -57,13 +57,19 @@ export default function Navbar() {
       sx={styles.appBar}
     >
       <Toolbar sx={styles.toolbar}>
-        {/* Logo */}
-        <Typography sx={styles.logo}>
+        {/* Logo — clickable, takes user to feed */}
+        <Typography sx={{ ...styles.logo, cursor: 'pointer' }} onClick={() => navigate('/')}>
           EATing
         </Typography>
 
-        {/* Nav links */}
-        <Box sx={styles.navLinksBox}>
+        {/* Nav links — centered absolutely */}
+        <Box sx={{
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 0.5,
+        }}>
           {navItems.map(({ path, icon, label }) => (
             <NavLink key={path} to={path} end style={{ textDecoration: 'none' }}>
               {({ isActive }) => (
@@ -94,21 +100,23 @@ export default function Navbar() {
           ))}
         </Box>
 
-        {/* Avatar */}
-        <NavLink to="/profile" style={{ textDecoration: 'none', display: 'flex' }}>
-          <Avatar
-            src={user?.avatarUrl}
-            alt={user?.name ?? user?.username}
-            sx={styles.avatar}
-          />
-        </NavLink>
+        {/* Right side — avatar + logout */}
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <NavLink to="/profile" style={{ textDecoration: 'none', display: 'flex' }}>
+            <Avatar
+              src={user?.avatarUrl}
+              alt={user?.name ?? user?.username}
+              sx={styles.avatar}
+            />
+          </NavLink>
 
-        {/* Logout */}
-        <Tooltip title="Logout">
-          <IconButton size="small" onClick={handleLogout} sx={{ ml: 0.5, color: 'text.secondary' }}>
-            <LogoutRoundedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+          {/* Logout */}
+          <Tooltip title="Logout">
+            <IconButton size="small" onClick={handleLogout} sx={{ color: 'text.secondary' }}>
+              <LogoutRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Toolbar>
     </AppBar>
   );
