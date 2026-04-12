@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SxProps, Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import type { Recipe } from '../types';
 import { RECIPE_CATEGORIES } from '../data/categories';
 
@@ -22,6 +23,7 @@ interface Props {
   onSave: (
     id: string,
     updated: Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>,
+    imageFile?: File,
   ) => void;
 }
 
@@ -62,6 +64,25 @@ const styles = {
     justifyContent: 'center',
     gap: 1,
     color: 'text.disabled',
+    cursor: 'pointer',
+    '&:hover': { borderColor: 'rgba(232,99,26,0.5)', bgcolor: 'rgba(232,99,26,0.08)' },
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: '100%',
+  },
+  changeOverlay: {
+    position: 'absolute',
+    inset: 0,
+    borderRadius: 3,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    bgcolor: 'rgba(0,0,0,0.45)',
+    opacity: 0,
+    transition: 'opacity 0.2s',
+    cursor: 'pointer',
+    '&:hover': { opacity: 1 },
   },
   categoryRow: {
     display: 'flex',
@@ -81,15 +102,20 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  const [previewSrc, setPreviewSrc] = useState('');
   const [category, setCategory] = useState('');
   const [cookingTime, setCookingTime] = useState(30);
   const [difficulty, setDifficulty] = useState<Recipe['difficulty']>('Easy');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && recipe) {
       setTitle(recipe.title);
       setDescription(recipe.description);
       setImageUrl(recipe.imageUrl);
+      setImageFile(undefined);
+      setPreviewSrc(recipe.imageUrl);
       setCategory(recipe.category);
       setCookingTime(recipe.cookingTime);
       setDifficulty(recipe.difficulty);
@@ -100,19 +126,23 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
   const isNew = recipe.id === '';
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setPreviewSrc(URL.createObjectURL(file));
+  }
+
   function handleSave() {
-    onSave(recipe!.id, {
-      title: title.trim(),
-      description: description.trim(),
-      imageUrl,
-      category,
-      cookingTime,
-      difficulty,
-    });
+    onSave(
+      recipe!.id,
+      { title: title.trim(), description: description.trim(), imageUrl, category, cookingTime, difficulty },
+      imageFile,
+    );
     onClose();
   }
 
-  const isValid = title.trim().length > 0 && description.trim().length > 0;
+  const isValid = title.trim().length > 0 && description.trim().length > 0 && category.trim().length > 0;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -125,23 +155,30 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
       <DialogContent>
         <Box sx={styles.fields}>
-          {imageUrl ? (
-            <Box component="img" src={imageUrl} alt="preview" sx={styles.imagePreview} />
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+
+          {previewSrc ? (
+            <Box sx={styles.imageWrapper}>
+              <Box component="img" src={previewSrc} alt="preview" sx={styles.imagePreview} />
+              <Box sx={styles.changeOverlay} onClick={() => fileInputRef.current?.click()}>
+                <Typography variant="caption" sx={{ color: '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <FileUploadRoundedIcon fontSize="small" /> Change photo
+                </Typography>
+              </Box>
+            </Box>
           ) : (
-            <Box sx={styles.imagePlaceholder}>
+            <Box sx={styles.imagePlaceholder} onClick={() => fileInputRef.current?.click()}>
               <ImageRoundedIcon sx={{ fontSize: 36, opacity: 0.4 }} />
-              <Typography variant="caption">Paste an image URL below</Typography>
+              <Typography variant="caption">Click to upload a photo</Typography>
             </Box>
           )}
-
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            size="small"
-            fullWidth
-            placeholder="https://…"
-          />
           <TextField
             label="Title"
             value={title}

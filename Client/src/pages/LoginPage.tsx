@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
+  Avatar,
   Box,
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import type { SxProps, Theme } from '@mui/material';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
@@ -89,6 +91,9 @@ export default function LoginPage() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirm, setRegConfirm] = useState('');
+  const [regAvatar, setRegAvatar] = useState<File | undefined>(undefined);
+  const [regAvatarPreview, setRegAvatarPreview] = useState('');
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -113,7 +118,7 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await register(regUsername, regEmail, regPassword);
+      await register(regUsername, regEmail, regPassword, regAvatar);
       navigate('/');
     } catch (err: any) {
       setError(err.message ?? 'Registration failed');
@@ -186,6 +191,52 @@ export default function LoginPage() {
 
           {tab === 1 && (
             <Box component="form" onSubmit={handleRegister} sx={styles.form}>
+              {/* Avatar picker */}
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setRegAvatar(file);
+                  setRegAvatarPreview(URL.createObjectURL(file));
+                }}
+              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75 }}>
+                <Box
+                  onClick={() => avatarInputRef.current?.click()}
+                  sx={{
+                    position: 'relative',
+                    cursor: 'pointer',
+                    '&:hover .av-overlay': { opacity: 1 },
+                  }}
+                >
+                  <Avatar
+                    src={regAvatarPreview}
+                    sx={{ width: 80, height: 80, border: '3px solid', borderColor: 'primary.light' }}
+                  />
+                  <Box
+                    className="av-overlay"
+                    sx={{
+                      position: 'absolute', inset: 0, borderRadius: '50%',
+                      bgcolor: 'rgba(0,0,0,0.48)',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      opacity: 0, transition: 'opacity 0.2s',
+                    }}
+                  >
+                    <FileUploadRoundedIcon sx={{ fontSize: 22, color: '#fff' }} />
+                    <Typography variant="caption" sx={{ color: '#fff', fontWeight: 600, fontSize: 10 }}>
+                      {regAvatarPreview ? 'Change' : 'Upload'}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Typography variant="caption" color="text.disabled">
+                  {regAvatarPreview ? 'Click to change photo' : 'Click to add a profile photo (optional)'}
+                </Typography>
+              </Box>
+
               <TextField
                 label="Username"
                 value={regUsername}
