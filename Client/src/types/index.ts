@@ -13,6 +13,9 @@ export interface User {
 export interface Recipe {
   id: string;
   authorId: string;
+  authorUsername: string;
+  authorName: string;
+  authorAvatar: string;
   title: string;
   description: string;
   category: string;
