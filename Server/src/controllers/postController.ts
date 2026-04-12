@@ -1,11 +1,17 @@
 import { Request, Response } from 'express';
 import PostRepository from '../repositories/postRepository';
+import { uploadToGridFS } from '../services/gridfs';
 import { isValidObjectId } from 'mongoose';
 
 class PostController {
   async createPost(req: Request, res: Response) {
     try {
-      const { sender, title, description, category, cookingTime, difficulty, imageUrl } = req.body;
+      const { sender, title, description, category, cookingTime, difficulty } = req.body;
+      let imageUrl = req.body.imageUrl ?? '';
+      if (req.file) {
+        const fileId = await uploadToGridFS(req.file.buffer, req.file.originalname, req.file.mimetype);
+        imageUrl = `/uploads/${fileId}`;
+      }
       if (!sender || !title) {
         res.status(400).send({ message: 'body param is missing (sender or title)' });
         return;
@@ -81,7 +87,12 @@ class PostController {
       if (category !== undefined) updates.category = category;
       if (cookingTime !== undefined) updates.cookingTime = cookingTime;
       if (difficulty !== undefined) updates.difficulty = difficulty;
-      if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+      if (req.file) {
+        const fileId = await uploadToGridFS(req.file.buffer, req.file.originalname, req.file.mimetype);
+        updates.imageUrl = `/uploads/${fileId}`;
+      } else if (imageUrl !== undefined) {
+        updates.imageUrl = imageUrl;
+      }
       if (sender !== undefined) updates.sender = sender;
 
       await PostRepository.updatePost(id, updates);

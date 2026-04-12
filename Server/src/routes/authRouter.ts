@@ -1,9 +1,10 @@
 import { Router } from "express";
 import authController from "../controllers/authController";
+import { upload } from "../middlewares/upload";
 
 const userRouter = Router();
 
-userRouter.post("/register", authController.register);
+userRouter.post("/register", upload.single('avatar'), authController.register);
 
 userRouter.post("/login", authController.login);
 

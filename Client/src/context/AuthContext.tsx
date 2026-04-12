@@ -14,7 +14,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, avatarFile?: File) => Promise<void>;
   googleLogin: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updated: AuthUser) => void;
@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persist(t, rt, u);
   }
 
-  async function register(username: string, email: string, password: string) {
-    const { token: t, refreshToken: rt, user: u } = await registerApi(username, email, password);
+  async function register(username: string, email: string, password: string, avatarFile?: File) {
+    const { token: t, refreshToken: rt, user: u } = await registerApi(username, email, password, avatarFile);
     persist(t, rt, u);
   }
 

@@ -36,7 +36,7 @@ const BLANK_RECIPE: Recipe = {
   authorAvatar: '',
   title: '',
   description: '',
-  category: 'General',
+  category: '',
   cookingTime: 30,
   difficulty: 'Easy',
   imageUrl: '',
@@ -47,29 +47,30 @@ const BLANK_RECIPE: Recipe = {
 };
 
 const styles = {
-  banner: {
-    height: { xs: 130, sm: 180 },
-    background: 'linear-gradient(135deg, #E8631A 0%, #F5A53B 55%, #E84040 100%)',
-    borderRadius: { xs: 0, sm: 3 },
-    mx: { xs: -3, sm: 0 },
-    mt: { xs: 0, sm: 3 },
+  heroSection: {
+    mx: { xs: -3, sm: -3 },
+    background: 'linear-gradient(180deg, #D94F1A 0%, #E8631A 28%, #F0703A 52%, #fdf0e8 80%, #ffffff 100%)',
+    pt: { xs: 5, sm: 7 },
+    pb: { xs: 2, sm: 3 },
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
   },
-  decorCircle1: { position: 'absolute', top: -30, right: 60, width: 150, height: 150, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '50%' },
-  decorCircle2: { position: 'absolute', bottom: -50, right: -20, width: 180, height: 180, bgcolor: 'rgba(255,255,255,0.06)', borderRadius: '50%' },
-  decorCircle3: { position: 'absolute', top: 20, left: 40, width: 80, height: 80, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: '50%' },
-  avatarRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: '-48px', mb: 2, px: { xs: 2, sm: 0 } },
-  avatar: { width: 96, height: 96, border: '4px solid', borderColor: 'background.paper', boxShadow: '0 4px 14px rgba(28,24,20,0.14)' },
-  profileInfo: { px: { xs: 2, sm: 0 }, mb: 3 },
+  decorCircle1: { position: 'absolute', top: -20, right: 70, width: 150, height: 150, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none' },
+  decorCircle2: { position: 'absolute', bottom: 20, right: -20, width: 180, height: 180, bgcolor: 'rgba(255,255,255,0.06)', borderRadius: '50%', pointerEvents: 'none' },
+  decorCircle3: { position: 'absolute', top: 15, left: 40, width: 80, height: 80, bgcolor: 'rgba(255,255,255,0.06)', borderRadius: '50%', pointerEvents: 'none' },
+  heroAvatar: { width: 110, height: 110, border: '4px solid #ffffff', boxShadow: '0 6px 24px rgba(28,24,20,0.22)', zIndex: 1 },
+  heroInfo: { textAlign: 'center', mt: 2, mb: 0, px: 2 },
   nameHeading: { lineHeight: 1.2, mb: 0.3 },
   username: { mb: 0.75 },
-  bio: { maxWidth: 440, mb: 0.75 },
-  statsBox: { display: 'flex', width: 'fit-content', border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', mb: 3, mx: { xs: 2, sm: 0 } },
+  bio: { maxWidth: 420, mx: 'auto', mb: 0.75 },
+  statsBox: { display: 'flex', width: 'fit-content', border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden', mb: 3, mx: 'auto' },
   statCell: { px: { xs: 2.5, sm: 3.5 }, py: 1.5, textAlign: 'center' },
   statValue: { lineHeight: 1.2, fontSize: { xs: 18, sm: 20 } },
   statLabel: { textTransform: 'uppercase', letterSpacing: 0.6 },
-  tabsRow: { display: 'flex', gap: 1, mb: 3, px: { xs: 2, sm: 0 }, borderBottom: '2px solid', borderColor: 'divider' },
+  tabsRow: { display: 'flex', gap: 1, mb: 3, borderBottom: '2px solid', borderColor: 'divider' },
   recipeCount: { ml: 1, fontSize: 14, color: 'text.disabled', fontFamily: 'inherit' },
   loadingBox: { display: 'flex', justifyContent: 'center', py: 10 },
   emptyBox: { textAlign: 'center', py: 8, border: '2px dashed', borderColor: 'divider', borderRadius: 3 },
@@ -200,19 +201,23 @@ export default function ProfilePage() {
   async function handleSaveRecipe(
     id: string,
     updated: Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>,
+    imageFile?: File,
   ) {
     if (id === '') {
-      const newRecipe = await createPost(updated, user!._id);
+      const newRecipe = await createPost(updated, user!._id, imageFile);
       setRecipes((prev) => [newRecipe, ...prev]);
     } else {
-      await updatePost(id, updated, user!._id);
+      await updatePost(id, updated, user!._id, imageFile);
       setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
     }
   }
 
-  async function handleSaveProfile(updates: Pick<import('../context/AuthContext').AuthUser, 'name' | 'username' | 'bio' | 'avatarUrl'>) {
+  async function handleSaveProfile(
+    updates: Pick<import('../context/AuthContext').AuthUser, 'name' | 'username' | 'bio' | 'avatarUrl'>,
+    avatarFile?: File,
+  ) {
     if (!token) return;
-    const updated = await updateProfileApi(user!._id, updates, token);
+    const updated = await updateProfileApi(user!._id, updates, token, avatarFile);
     updateUser(updated);
   }
 
@@ -227,30 +232,41 @@ export default function ProfilePage() {
 
   return (
     <Container maxWidth="md" sx={{ pb: 6 }}>
-      {/* Banner */}
-      <Box sx={styles.banner}>
+      {/* Hero header: orange → white gradient with centered avatar */}
+      <Box sx={styles.heroSection}>
         <Box sx={styles.decorCircle1} />
         <Box sx={styles.decorCircle2} />
         <Box sx={styles.decorCircle3} />
-      </Box>
 
-      {/* Avatar + Edit button */}
-      <Box sx={styles.avatarRow}>
-        <Avatar src={user.avatarUrl} alt={user.name} sx={styles.avatar} />
-        <Button variant="outlined" size="small" onClick={() => setEditOpen(true)} sx={{ mb: 0.5, px: 2 }}>
+        {/* Edit Profile button — top right corner */}
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => setEditOpen(true)}
+          sx={{
+            position: 'absolute', top: 14, right: 16,
+            color: 'white', borderColor: 'rgba(255,255,255,0.65)',
+            '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.15)' },
+          }}
+        >
           Edit Profile
         </Button>
-      </Box>
 
-      {/* Name, username, bio */}
-      <Box sx={styles.profileInfo}>
-        <Typography variant="h5" sx={styles.nameHeading}>{user.name}</Typography>
-        <Typography variant="body2" color="primary" fontWeight={600} sx={styles.username}>
-          @{user.username}
-        </Typography>
-        {user.bio && (
-          <Typography variant="body2" color="text.secondary" sx={styles.bio}>{user.bio}</Typography>
-        )}
+        {/* Centered avatar */}
+        <Avatar src={user.avatarUrl} alt={user.name} sx={styles.heroAvatar} />
+
+        {/* Name, username, bio — inside the gradient so it fades down to here */}
+        <Box sx={styles.heroInfo}>
+          <Typography variant="h5" sx={{ ...styles.nameHeading, fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700 }}>
+            {user.name}
+          </Typography>
+          <Typography variant="body2" color="primary" fontWeight={600} sx={styles.username}>
+            @{user.username}
+          </Typography>
+          {user.bio && (
+            <Typography variant="body2" color="text.secondary" sx={styles.bio}>{user.bio}</Typography>
+          )}
+        </Box>
       </Box>
 
       {/* Stats */}
@@ -298,7 +314,7 @@ export default function ProfilePage() {
               startIcon={aiLoading ? <CircularProgress size={14} color="inherit" /> : <AutoAwesomeRoundedIcon />}
               onClick={() => setMealDialogOpen(true)}
               disabled={aiLoading || favorites.length === 0}
-              sx={{ px: 2, borderRadius: 50, fontFamily: "'Fredoka One', cursive", letterSpacing: 0.5 }}
+              sx={{ px: 2, borderRadius: 50, fontFamily: "'Fredoka One', cursive", letterSpacing: 0.5, fontWeight: 400 }}
             >
               {aiLoading ? 'Generating...' : 'Inspire Me!'}
             </Button>
