@@ -1,6 +1,34 @@
 /**
  * @swagger
  * /comment:
+ *   get:
+ *     summary: Get all comments
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: postId
+ *         schema:
+ *           type: string
+ *         description: Filter comments by post id
+ *         example: 674069829f3ed9c93edb75b0
+ *     responses:
+ *       200:
+ *         description: List of comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /comment:
  *   post:
  *     summary: Create a new comment
  *     tags: [Comments]

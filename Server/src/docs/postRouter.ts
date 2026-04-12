@@ -186,7 +186,7 @@
 
 /**
  * @swagger
- * /posts:
+ * /post:
  *   get:
  *     summary: Get all posts
  *     tags: [Posts]
@@ -210,6 +210,33 @@
  *                 $ref: '#/components/schemas/Post'
  *       400:
  *         description: Invalid sender
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /post/{id}:
+ *   delete:
+ *     summary: Delete a post by id
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Id of the post to delete
+ *         example: 674069829f3ed9c93edb75b0
+ *     responses:
+ *       200:
+ *         description: Post deleted successfully
+ *       400:
+ *         description: Invalid post id
+ *       404:
+ *         description: Post not found
  *       500:
  *         description: Internal server error
  */

@@ -47,7 +47,7 @@
 
 /**
  * @swagger
- * /auth/refresh:
+ * /auth/refresh-token:
  *   post:
  *     summary: Refresh tokens
  *     description: Refresh both the access and the refresh tokens using the provided refresh token
