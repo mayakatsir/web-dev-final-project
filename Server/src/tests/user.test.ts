@@ -2,22 +2,24 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { commentModel } from '../models/comment';
 import { Express } from 'express';
-import { User, userModel } from '../models/user';
+import { userModel } from '../models/user';
 import { postModel } from '../models/post';
 import UserRepository from '../repositories/userRepository';
 
 let app: Express;
-let testUser: User & { _id: string, token: string } = {
+let testUser = {
     username: 'testuser',
     email: 'test@user.com',
     password: 'testpassword',
+    name: '',
+    avatarUrl: '',
+    bio: '',
     token: '',
-    refreshToken: [],
+    refreshToken: [] as string[],
     _id: '',
 };
 
 let userId: string;
-let postId = '';
 
 beforeAll(async () => {
     app = await global.initTestServer();
@@ -26,7 +28,8 @@ beforeAll(async () => {
     await userModel.deleteMany();
     await postModel.deleteMany();
 
-    testUser = (await request(app).post('/auth/register').send(testUser)).body;
+    const registerBody = (await request(app).post('/auth/register').send(testUser)).body;
+    testUser._id = registerBody.user._id;
     userId = testUser._id;
 
     const { token, refreshToken } = (
@@ -49,7 +52,7 @@ describe('Users Tests', () => {
     test('Edit a user', async () => {
         const {
             statusCode,
-            body: { message },
+            body: { user },
         } = await request(app)
             .put(`/user/${userId}`)
             .send({
@@ -58,7 +61,7 @@ describe('Users Tests', () => {
             .set('Authorization', `Bearer ${testUser.token}`);
 
         expect(statusCode).toBe(200);
-        expect(message).toBe(`Successfully updated user with id: ${userId}`);
+        expect(user).toBeDefined();
     });
 
     test('Edit a user with an invalid user id', async () => {
