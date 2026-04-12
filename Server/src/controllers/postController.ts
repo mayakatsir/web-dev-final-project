@@ -132,6 +132,20 @@ class PostController {
     }
   }
 
+  async getLikedPosts(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      if (!isValidObjectId(userId)) {
+        return res.status(400).json({ message: `Invalid userId: ${userId}` });
+      }
+      const posts = await PostRepository.getLikedPosts(userId);
+      return res.status(200).json({ posts });
+    } catch (err) {
+      console.error('Error getting liked posts', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
   async deletePostById(req: Request, res: Response) {
     try {
       const { id } = req.params;

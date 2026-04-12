@@ -124,6 +124,10 @@ Content-Type: application/json
   "refreshToken": 
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTY0MjYxZWRjYzYyYWYxNmUzMjRkN2YiLCJpYXQiOjE3NjgxNzEwMzgsImV4cCI6MTc2ODE3MjAzOH0.FXrugt42amciUcH0kvwEvq-7hYnZkyBCsX0j1xwovN8"}
 
+########ASK AI##########
+### Ask AI
+GET {{baseUrl}}/ask-ai?prompt=Give me a quick pasta recipe
+
 ### Logout
 POST {{baseUrl}}/auth/logout
 Content-Type: application/json
