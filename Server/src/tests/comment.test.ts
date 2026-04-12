@@ -2,17 +2,20 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { commentModel } from '../models/comment';
 import { Express, response } from 'express';
-import { User, userModel } from '../models/user';
+import { userModel } from '../models/user';
 import { postModel } from '../models/post';
 
 let app: Express;
 
-let testUser: User & { _id: string, token: string } = {
+let testUser = {
     username: 'testuser',
     email: 'test@user.com',
     password: 'testpassword',
+    name: '',
+    avatarUrl: '',
+    bio: '',
     token: '',
-    refreshToken: [],
+    refreshToken: [] as string[],
     _id: '',
 };
 let userId: string;
@@ -25,7 +28,8 @@ beforeAll(async () => {
     await userModel.deleteMany();
     await postModel.deleteMany();
 
-    testUser = (await request(app).post('/auth/register').send(testUser)).body;
+    const registerBody = (await request(app).post('/auth/register').send(testUser)).body;
+    testUser._id = registerBody.user._id;
     userId = testUser._id;
 
     const { token, refreshToken } = (

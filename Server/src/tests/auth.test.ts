@@ -2,7 +2,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { postModel } from '../models/post';
 import { Express } from 'express';
-import { userModel, User } from '../models/user';
+import { userModel } from '../models/user';
 import { commentModel } from '../models/comment';
 
 let app: Express;
@@ -20,10 +20,13 @@ afterAll(async () => {
     await global.closeTestServer();
 });
 
-const testUser: User & { _id: string; accessToken: string; refreshedToken: string } = {
+const testUser = {
     email: 'test@user.com',
     password: 'testpassword',
     username: 'test',
+    name: '',
+    avatarUrl: '',
+    bio: '',
     _id: '',
     refreshToken: [],
     accessToken: '',
@@ -37,7 +40,7 @@ describe('Auth Tests', () => {
             .send(testUser);
 
         expect(response.statusCode).toBe(200);
-        testUser._id = response.body._id;
+        testUser._id = response.body.user._id;
     });
 
     test('Fail registering the same user twice', async () => {
