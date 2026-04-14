@@ -10,11 +10,15 @@ import askAIRouter from './src/routes/askAIRouter';
 import uploadsRouter from './src/routes/uploadsRouter';
 import { getConfig } from './src/services/config';
 import { initializeDBConnection } from './src/services/db';
+import https from 'https';
+import fs from "fs";
 
 const config = getConfig();
 
 const app: Application = express();
-const port = config.PORT;
+const httpPort = config.HTTP_PORT;
+const httpsPort = config.HTTPS_PORT;
+const isProduction = config.NODE_ENV === "production"
 
 const main  = async () => {
   await initializeDBConnection();
@@ -47,9 +51,20 @@ const main  = async () => {
     res.send({ message: 'API is running' });
   });
   
-  app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-  });
+   if (isProduction) {
+    const options  = {key: fs.readFileSync("../client-key.pem"), cert:  fs.readFileSync("../client-cert.pem")}
+    https.createServer(options, app).listen(
+        httpsPort,
+        () => {
+            console.log(`Server running on port ${httpsPort} https`);
+        }
+      )
+    }else {
+      app.listen(httpPort, () => {
+      console.log(`Server running on port ${httpPort} http`);
+      });    
+    }
+
 }
 
 main();

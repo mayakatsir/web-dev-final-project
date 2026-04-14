@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 
 type Config = {
-    PORT: string;
+    HTTP_PORT: string;
+    HTTPS_PORT: string;
+    NODE_ENV: string;
     MONGO_DB_CONNECTION_URL: string;
     REFRESH_TOKEN_EXPIRES_SEC: number;
     ACCESS_TOKEN_EXPIRES_SEC: number;
@@ -12,7 +14,9 @@ type Config = {
 };
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
-    "PORT",
+    "HTTP_PORT",
+    "HTTPS_PORT",
+    "NODE_ENV",
     'MONGO_DB_CONNECTION_URL',
     'JWT_ACCESS_SECRET',
     'ACCESS_TOKEN_EXPIRES_SEC',
@@ -33,7 +37,9 @@ export const getConfig = () => {
         const { env } = process as { env: Record<string, string> };
         
         config = {
-            PORT: env.PORT || '8080',
+            HTTP_PORT: env.HTTP_PORT || '80',
+            HTTPS_PORT: env.HTTPS_PORT || "443",
+            NODE_ENV: env.NODE_ENV || "development",
             MONGO_DB_CONNECTION_URL: env.MONGO_DB_CONNECTION_URL,
             REFRESH_TOKEN_EXPIRES_SEC: parseInt(env.REFRESH_TOKEN_EXPIRES_SEC) || 60*60,
             ACCESS_TOKEN_EXPIRES_SEC: parseInt(env.ACCESS_TOKEN_EXPIRES_SEC) || 60*60*24,
