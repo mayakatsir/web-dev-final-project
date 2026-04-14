@@ -18,8 +18,6 @@ let appInstance: Express | null = null;
 
 export const createApp = async () => {
     await initializeDBConnection();
-    const port = getConfig().PORT;
-
     const app = express();
 
     app.use(cors());
