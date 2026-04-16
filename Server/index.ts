@@ -12,6 +12,7 @@ import { getConfig } from './src/services/config';
 import { initializeDBConnection } from './src/services/db';
 import https from 'https';
 import fs from "fs";
+import path from "path";
 
 const config = getConfig();
 
@@ -47,8 +48,10 @@ const main  = async () => {
   app.use("/auth", authRouter)
   app.use("/ask-ai", askAIRouter)
 
-  app.get('/', (_req, res: Response) => {
-    res.send({ message: 'API is running' });
+  const clientDist = path.join(__dirname, '../../Client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (_req, res: Response) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
   });
   
    if (isProduction) {
