@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
     "test:watch": "jest --runInBand --watchAll",
-    "prod": "cp .envprod .env && cd ../Client && npm install && npm run build && cd ../Server && tsc --project tsconfig_prod.json && pm2 restart ecosystem.config.js --env production"
+    "prod": "cp .envprod .env && cd ../Client && npm install --include=dev && npm run build && cd ../Server && tsc --project tsconfig_prod.json && pm2 restart ecosystem.config.js --env production"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
