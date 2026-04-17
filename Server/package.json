@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build:prod": "tsc --project tsconfig_prod.json && npm prune --omit=dev",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "test": "jest --runInBand --detectOpenHandles --forceExit",

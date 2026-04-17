@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import fs from "fs";
 import https from 'https';
+import path from 'path';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUI from 'swagger-ui-express';
 import askAIRouter from './src/routes/askAIRouter';
@@ -48,7 +49,16 @@ const main  = async () => {
   app.use("/ask-ai", askAIRouter)
   
    if (isProduction) {
-    const options  = {key: fs.readFileSync("../client-key.pem"), cert:  fs.readFileSync("../client-cert.pem")}
+    // Serve the built React app
+    app.use(express.static(path.resolve(__dirname, '../client')));
+
+    // SPA routes — let React Router handle them
+    const clientRoutes = ['/', '/login', '/profile', '/recipe/*'];
+    app.get(clientRoutes, (_req, res) => {
+      res.sendFile(path.resolve(__dirname, '../client/index.html'));
+    });
+
+    const options  = {key: fs.readFileSync(__dirname + '/../certs/key.pem'), cert: fs.readFileSync(__dirname + '/../certs/cert.pem')}
     https.createServer(options, app).listen(
         httpsPort,
         () => {
