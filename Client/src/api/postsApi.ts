@@ -1,6 +1,6 @@
 import type { Recipe } from '../types';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
 interface ServerPost {
   _id: string;

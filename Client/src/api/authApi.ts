@@ -1,6 +1,6 @@
 import type { AuthUser } from '../context/AuthContext';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
 function resolveAvatarUrl(url: string | undefined): string {
   if (!url) return '';

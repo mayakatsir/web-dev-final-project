@@ -1,6 +1,6 @@
 import type { Comment } from '../types';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
 export function isServerPostId(id: string): boolean {
   return /^[0-9a-fA-F]{24}$/.test(id);

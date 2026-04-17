@@ -12,7 +12,7 @@ import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
 import { useAuth } from '../context/AuthContext';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
 const PAGE_SIZE = 6;
 
