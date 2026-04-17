@@ -1,18 +1,17 @@
 import cors from 'cors';
+import express, { Application } from 'express';
+import fs from "fs";
+import https from 'https';
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUI from 'swagger-ui-express';
-import express, { Application, Response } from 'express';
+import askAIRouter from './src/routes/askAIRouter';
 import authRouter from './src/routes/authRouter';
 import commentRouter from './src/routes/commentRouter';
 import postRouter from './src/routes/postRouter';
-import userRouter from './src/routes/userRouter';
-import askAIRouter from './src/routes/askAIRouter';
 import uploadsRouter from './src/routes/uploadsRouter';
+import userRouter from './src/routes/userRouter';
 import { getConfig } from './src/services/config';
 import { initializeDBConnection } from './src/services/db';
-import https from 'https';
-import fs from "fs";
-import path from "path";
 
 const config = getConfig();
 
@@ -47,12 +46,6 @@ const main  = async () => {
   app.use("/user", userRouter)
   app.use("/auth", authRouter)
   app.use("/ask-ai", askAIRouter)
-
-  const clientDist = path.join(__dirname, '../../Client/dist');
-  app.use(express.static(clientDist));
-  app.get('*', (_req, res: Response) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
-  });
   
    if (isProduction) {
     const options  = {key: fs.readFileSync("../client-key.pem"), cert:  fs.readFileSync("../client-cert.pem")}
