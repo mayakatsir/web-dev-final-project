@@ -7,6 +7,7 @@ import { initializeDBConnection } from '../services/db';
 import commentRouter from '../routes/commentRouter';
 import userRouter from '../routes/userRouter';
 import authRouter from '../routes/authRouter';
+import askAIRouter from '../routes/askAIRouter';
 
 
 declare global {
@@ -26,9 +27,10 @@ export const createApp = async () => {
     app.use("/post", postRouter);
     app.use("/comment", commentRouter);
     app.use("/user", userRouter)
-    app.use("/auth", authRouter)
+    app.use("/auth", authRouter);
+    app.use("/ask-ai", askAIRouter);
 
-    app.get('/', (req: Request, res: Response) => {
+    app.get('/', (_req: Request, res: Response) => {
       res.send({ message: 'API is running' });
     });
   

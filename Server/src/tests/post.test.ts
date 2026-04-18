@@ -201,8 +201,115 @@ describe('Posts Tests', () => {
             .send({
                 content: 'Test Content 2',
             });
-            
+
         expect(statusCode).toBe(400);
         expect(message).toBe('body param is missing (sender or title)');
+    });
+
+    test('Like a post', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .post(`/post/${postId}/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({ userId });
+
+        expect(statusCode).toBe(200);
+        expect(message).toBe('Liked');
+    });
+
+    test('Fail to like a post with invalid post id', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .post(`/post/123abc/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({ userId });
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('Invalid post id: 123abc');
+    });
+
+    test('Fail to like a post without userId', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .post(`/post/${postId}/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({});
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('userId is required');
+    });
+
+    test('Get liked posts for user', async () => {
+        const { statusCode, body: { posts } } = await request(app)
+            .get(`/post/liked/${userId}`)
+            .set('Authorization', `Bearer ${testUser.token}`);
+
+        expect(statusCode).toBe(200);
+        expect(posts.length).toBeGreaterThanOrEqual(1);
+        expect(posts.some((p: any) => p._id === postId)).toBe(true);
+    });
+
+    test('Fail to get liked posts with invalid userId', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .get(`/post/liked/123abc`)
+            .set('Authorization', `Bearer ${testUser.token}`);
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('Invalid userId: 123abc');
+    });
+
+    test('Unlike a post', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/${postId}/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({ userId });
+
+        expect(statusCode).toBe(200);
+        expect(message).toBe('Unliked');
+    });
+
+    test('Fail to unlike a post with invalid post id', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/123abc/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({ userId });
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('Invalid post id: 123abc');
+    });
+
+    test('Fail to unlike a post without userId', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/${postId}/like`)
+            .set('Authorization', `Bearer ${testUser.token}`)
+            .send({});
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('userId is required');
+    });
+
+    test('Delete a post', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/${postId}`)
+            .set('Authorization', `Bearer ${testUser.token}`);
+
+        expect(statusCode).toBe(200);
+        expect(message).toBe('Post deleted successfully');
+    });
+
+    test('Fail to delete a post with invalid id', async () => {
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/123abc`)
+            .set('Authorization', `Bearer ${testUser.token}`);
+
+        expect(statusCode).toBe(400);
+        expect(message).toBe('id: 123abc is not valid');
+    });
+
+    test('Fail to delete a non-existing post', async () => {
+        const fakeId = new mongoose.Types.ObjectId().toString();
+        const { statusCode, body: { message } } = await request(app)
+            .delete(`/post/${fakeId}`)
+            .set('Authorization', `Bearer ${testUser.token}`);
+
+        expect(statusCode).toBe(404);
+        expect(message).toBe(`didn't find post with id: ${fakeId}`);
     });
 });
