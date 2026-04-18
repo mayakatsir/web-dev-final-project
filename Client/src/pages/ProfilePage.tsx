@@ -19,6 +19,7 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { Recipe } from '../types';
 import { useAuth } from '../context/AuthContext';
+const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 import { updateProfileApi } from '../api/userApi';
 import { createPost, deletePost, fetchLikedPosts, fetchUserPosts, updatePost } from '../api/postsApi';
 import { RECIPE_CATEGORIES } from '../data/categories';
@@ -176,7 +177,7 @@ export default function ProfilePage() {
     setAiError('');
     setMealDialogOpen(false);
     try {
-      const res = await fetch('http://localhost:8080/ask-ai/recommend-from-favorites', {
+      const res = await fetch(`${BASE_URL}/ask-ai/recommend-from-favorites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user!._id, mealType: selectedMeal }),
