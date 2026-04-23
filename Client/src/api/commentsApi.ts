@@ -2,6 +2,12 @@ import type { Comment } from '../types';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
+function resolveAvatarUrl(url: string | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('/uploads/')) return `${BASE_URL}${url}`;
+  return url;
+}
+
 export function isServerPostId(id: string): boolean {
   return /^[0-9a-fA-F]{24}$/.test(id);
 }
@@ -12,7 +18,7 @@ function mapComment(raw: Record<string, unknown>): Comment {
     recipeId: String(raw.postId),
     authorId: raw.sender as string,
     authorName: (raw.senderName as string) ?? (raw.sender as string),
-    authorAvatar: (raw.senderAvatar as string) ?? '',
+    authorAvatar: resolveAvatarUrl(raw.senderAvatar as string | undefined),
     text: raw.content as string,
     postedAt: (raw.postedAt as string) ?? new Date().toISOString(),
   };
