@@ -69,6 +69,7 @@ export default function CommentsPage() {
     setSubmitting(true);
     try {
       const newComment = await createComment(id, user?._id ?? '', trimmed);
+      newComment.authorName = user?.name || user?.username || newComment.authorId;
       setComments((prev) => [...prev, newComment]);
       setCommentText('');
     } catch (err) {
@@ -141,7 +142,7 @@ export default function CommentsPage() {
                     color={isMe ? 'primary.dark' : 'text.primary'}
                     sx={{ mb: 0.25 }}
                   >
-                    {isMe ? (user?.name || user?.username) : c.authorId}
+                    {c.authorName}
                   </Typography>
                   <Typography variant="body2" sx={{ fontSize: 13.5, lineHeight: 1.5 }}>
                     {c.text}
