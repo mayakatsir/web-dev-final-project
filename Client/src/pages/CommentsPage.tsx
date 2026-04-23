@@ -70,6 +70,7 @@ export default function CommentsPage() {
     try {
       const newComment = await createComment(id, user?._id ?? '', trimmed);
       newComment.authorName = user?.name || user?.username || newComment.authorId;
+      newComment.authorAvatar = user?.avatarUrl ?? '';
       setComments((prev) => [...prev, newComment]);
       setCommentText('');
     } catch (err) {
@@ -116,11 +117,7 @@ export default function CommentsPage() {
             return (
               <Box key={c.id} sx={styles.commentRow}>
                 <Avatar
-                  src={
-                    isMe
-                      ? user?.avatarUrl
-                      : `https://i.pravatar.cc/150?u=${c.authorId}`
-                  }
+                  src={isMe ? user?.avatarUrl : c.authorAvatar}
                   sx={{ width: 34, height: 34, mt: 0.25, flexShrink: 0 }}
                 />
                 <Box

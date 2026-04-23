@@ -33,6 +33,7 @@ export interface Comment {
   recipeId: string;
   authorId: string;
   authorName: string;
+  authorAvatar: string;
   text: string;
   postedAt: string;
 }

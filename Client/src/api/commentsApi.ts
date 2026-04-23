@@ -12,6 +12,7 @@ function mapComment(raw: Record<string, unknown>): Comment {
     recipeId: String(raw.postId),
     authorId: raw.sender as string,
     authorName: (raw.senderName as string) ?? (raw.sender as string),
+    authorAvatar: (raw.senderAvatar as string) ?? '',
     text: raw.content as string,
     postedAt: (raw.postedAt as string) ?? new Date().toISOString(),
   };

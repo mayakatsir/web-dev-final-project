@@ -18,9 +18,12 @@ class CommentRepository {
         const comments = await commentModel.find({ postId }).lean();
         const senderIds = [...new Set(comments.map((c) => c.sender))];
         const objectIdSenderIds = senderIds.filter((id) => /^[0-9a-fA-F]{24}$/.test(id));
-        const users = await userModel.find({ _id: { $in: objectIdSenderIds } }).select('name username').lean();
-        const userMap = new Map(users.map((u) => [String(u._id), u.name || u.username]));
-        return comments.map((c) => ({ ...c, senderName: userMap.get(c.sender) ?? c.sender }));
+        const users = await userModel.find({ _id: { $in: objectIdSenderIds } }).select('name username avatarUrl').lean();
+        const userMap = new Map(users.map((u) => [String(u._id), { name: u.name || u.username, avatarUrl: u.avatarUrl ?? '' }]));
+        return comments.map((c) => {
+            const userData = userMap.get(c.sender);
+            return { ...c, senderName: userData?.name ?? c.sender, senderAvatar: userData?.avatarUrl ?? '' };
+        });
     }
 
     async getCommentById(id: string) {
