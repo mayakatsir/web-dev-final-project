@@ -131,7 +131,6 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
 
       <DialogContent>
         <Box sx={styles.avatarSection}>
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -140,7 +139,6 @@ export default function EditProfileModal({ open, user, onClose, onSave }: Props)
             onChange={handleFileChange}
           />
 
-          {/* Avatar with hover overlay */}
           <Box sx={styles.avatarWrapper} onClick={() => fileInputRef.current?.click()}>
             <Avatar src={previewSrc} alt={name} sx={styles.avatar} />
             <Box sx={styles.changeOverlay}>

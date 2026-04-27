@@ -11,6 +11,7 @@ import type { Recipe } from '../types';
 import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
 import { useAuth } from '../context/AuthContext';
 import RecipeFeedCard from '../components/RecipeFeedCard';
+import AIAnswerRenderer from '../components/AIAnswerRenderer';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
@@ -190,9 +191,8 @@ export default function HomePage() {
         )}
       </Box>
 
-      </Box>{/* end feed column */}
+      </Box>
 
-      {/* Sticky grocery → recipe recommendation panel */}
       <Box sx={{ width: 320, flexShrink: 0, position: 'sticky', top: 80, display: { xs: 'none', md: 'block' } }}>
         <Box sx={styles.groceryBox}>
           <Typography sx={styles.groceryHeading}>
@@ -221,79 +221,14 @@ export default function HomePage() {
             {aiLoading ? 'Thinking...' : 'Recommend a Recipe'}
           </Button>
           {aiAnswer && (
-          <Box sx={styles.answer}>
-            {aiAnswer.split('\n').map((line, i) => {
-              const trimmed = line.trim();
-              if (!trimmed) return <Box key={i} sx={{ height: 6 }} />;
-
-              // ## or # headings
-              if (/^#{1,3} /.test(trimmed)) {
-                const text = trimmed.replace(/^#{1,3}\s+/, '');
-                return (
-                  <Typography key={i} sx={{
-                    fontFamily: "'Fredoka One', cursive",
-                    fontWeight: 400,
-                    fontSize: 18,
-                    color: 'primary.main',
-                    mt: 1.5,
-                    mb: 0.5,
-                    letterSpacing: 0.5,
-                  }}>
-                    {text}
-                  </Typography>
-                );
-              }
-
-              // **bold** inline — strip and render bold
-              const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
-              const rendered = parts.map((part, j) =>
-                part.startsWith('**') && part.endsWith('**')
-                  ? <Box key={j} component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>{part.slice(2, -2)}</Box>
-                  : part
-              );
-
-              // Numbered steps
-              if (/^\d+\./.test(trimmed)) {
-                return (
-                  <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'flex-start' }}>
-                    <Box sx={{
-                      minWidth: 22, height: 22, borderRadius: '50%',
-                      bgcolor: 'primary.main', color: '#fff',
-                      fontSize: 11, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      mt: '2px', flexShrink: 0,
-                    }}>
-                      {trimmed.match(/^(\d+)/)?.[1]}
-                    </Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
-                      {rendered.map((p) => typeof p === 'string' ? p.replace(/^\d+\.\s*/, '') : p).filter((_, idx) => idx > 0 || typeof rendered[0] === 'object' || (rendered[0] as string).replace(/^\d+\.\s*/, ''))}
-                    </Typography>
-                  </Box>
-                );
-              }
-
-              // Bullet points
-              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                return (
-                  <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                    <Box component="span" sx={{ color: 'primary.main', fontWeight: 700, mt: '1px' }}>•</Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6 }}>{rendered}</Typography>
-                  </Box>
-                );
-              }
-
-              return (
-                <Typography key={i} variant="body2" sx={{ lineHeight: 1.7, mb: 0.25 }}>
-                  {rendered}
-                </Typography>
-              );
-            })}
-          </Box>
+            <Box sx={styles.answer}>
+              <AIAnswerRenderer answer={aiAnswer} />
+            </Box>
           )}
         </Box>
       </Box>
 
-      </Box>{/* end flex row */}
+      </Box>
     </Container>
   );
 }

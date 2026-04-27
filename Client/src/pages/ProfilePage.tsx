@@ -262,13 +262,11 @@ export default function ProfilePage() {
 
   return (
     <Container maxWidth="md" sx={{ pb: 6 }}>
-      {/* Hero header: orange → white gradient with centered avatar */}
       <Box sx={styles.heroSection}>
         <Box sx={styles.decorCircle1} />
         <Box sx={styles.decorCircle2} />
         <Box sx={styles.decorCircle3} />
 
-        {/* Edit Profile button — top right corner */}
         <Button
           variant="outlined"
           size="small"
@@ -282,10 +280,8 @@ export default function ProfilePage() {
           Edit Profile
         </Button>
 
-        {/* Centered avatar */}
         <Avatar src={user.avatarUrl} alt={user.name} sx={styles.heroAvatar} />
 
-        {/* Name, username, bio — inside the gradient so it fades down to here */}
         <Box sx={styles.heroInfo}>
           <Typography variant="h5" sx={{ ...styles.nameHeading, fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700 }}>
             {user.name}
@@ -299,7 +295,6 @@ export default function ProfilePage() {
         </Box>
       </Box>
 
-      {/* Stats */}
       <Box sx={styles.statsBox}>
         {[
           { value: myTotal, label: 'Recipes' },
@@ -315,7 +310,6 @@ export default function ProfilePage() {
         ))}
       </Box>
 
-      {/* Tabs */}
       <Box sx={styles.tabsRow}>
         <TabButton
           active={tab === 'mine'}
@@ -352,7 +346,6 @@ export default function ProfilePage() {
         )}
       </Box>
 
-      {/* Content */}
       {pageLoading ? (
         <Box sx={styles.loadingBox}><CircularProgress sx={{ color: 'primary.main' }} /></Box>
       ) : activeList.length === 0 ? (
@@ -382,7 +375,6 @@ export default function ProfilePage() {
         </Grid>
       )}
 
-      {/* Sentinel */}
       <Box ref={sentinelRef} sx={styles.sentinel}>
         {loading && <CircularProgress size={26} sx={{ color: 'primary.main' }} />}
         {!hasMore && !loading && !pageLoading && activeList.length > 0 && (
@@ -390,7 +382,6 @@ export default function ProfilePage() {
         )}
       </Box>
 
-      {/* Recipe description dialog */}
       <Dialog open={viewingRecipe !== null} onClose={() => setViewingRecipe(null)} maxWidth="sm" fullWidth>
         {viewingRecipe && (
           <>
@@ -428,7 +419,6 @@ export default function ProfilePage() {
         )}
       </Dialog>
 
-      {/* Meal type picker dialog */}
       <Dialog open={mealDialogOpen} onClose={() => { setMealDialogOpen(false); setSelectedMeal(''); }} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontFamily: "'Fredoka One', cursive", color: 'primary.main', fontSize: 22 }}>
           What are you in the mood for?
@@ -463,7 +453,6 @@ export default function ProfilePage() {
         </DialogActions>
       </Dialog>
 
-      {/* AI result dialog */}
       <Dialog open={aiResultOpen} onClose={() => { setAiResultOpen(false); setAiError(''); setAiAnswer(''); }} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontFamily: "'Fredoka One', cursive", color: aiError ? 'error.main' : 'primary.main', fontSize: 22 }}>
           {aiError ? 'Oops!' : 'Your Personalized Recipe'}

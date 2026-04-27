@@ -100,7 +100,6 @@ const styles = {
 export default function RecipeCard({ recipe, onEdit, onDelete, onClick }: Props) {
   return (
     <Card sx={styles.card} onClick={onClick}>
-      {/* Image with gradient + overlay */}
       <Box sx={styles.imageWrapper}>
         <CardMedia
           component="img"
@@ -109,7 +108,6 @@ export default function RecipeCard({ recipe, onEdit, onDelete, onClick }: Props)
           sx={styles.cardImage}
         />
 
-        {/* Gradient overlay with title */}
         <Box sx={styles.gradientOverlay}>
           <Typography sx={styles.overlayTitle}>
             {recipe.title}
@@ -130,7 +128,6 @@ export default function RecipeCard({ recipe, onEdit, onDelete, onClick }: Props)
           </Box>
         </Box>
 
-        {/* Edit / delete hover overlay */}
         {(onEdit || onDelete) && (
           <Box
             className="edit-overlay"
@@ -164,7 +161,6 @@ export default function RecipeCard({ recipe, onEdit, onDelete, onClick }: Props)
         )}
       </Box>
 
-      {/* Footer */}
       <Box sx={styles.footer}>
         <Chip label={recipe.category || 'General'} size="small" variant="outlined" />
         <Box sx={styles.footerLikes}>

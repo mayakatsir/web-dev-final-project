@@ -107,7 +107,6 @@ export default function CommentsPage() {
 
   return (
     <Container maxWidth="sm" sx={styles.container}>
-      {/* Back */}
       <Button
         startIcon={<ArrowBackRoundedIcon />}
         onClick={() => navigate(-1)}
@@ -116,12 +115,10 @@ export default function CommentsPage() {
         Back
       </Button>
 
-      {/* Header */}
       <Typography variant="h6" sx={styles.heading}>
         {loading ? 'Comments' : `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}`}
       </Typography>
 
-      {/* Comment list */}
       {loading ? (
         <Box sx={styles.loadingBox}>
           <CircularProgress size={28} sx={{ color: 'primary.main' }} />
@@ -176,12 +173,10 @@ export default function CommentsPage() {
         </Box>
       )}
 
-      {/* Load-more sentinel */}
       <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
         {hasMore && loading && <CircularProgress size={22} sx={{ color: 'primary.main' }} />}
       </Box>
 
-      {/* Sticky comment input */}
       <Box sx={styles.stickyInput}>
         <Avatar
           src={user?.avatarUrl}
