@@ -86,7 +86,7 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
 
   const displayName = author?.name ?? (recipe.authorName || recipe.authorUsername);
   const displayUsername = author?.username ?? recipe.authorUsername;
-  const avatarSrc = author?.avatarUrl ?? (recipe.authorAvatar || `https://i.pravatar.cc/150?u=${recipe.authorId}`);
+  const avatarSrc = author?.avatarUrl || recipe.authorAvatar || '';
 
   return (
     <Card>

@@ -32,6 +32,8 @@ export interface Comment {
   id: string;
   recipeId: string;
   authorId: string;
+  authorName: string;
+  authorAvatar: string;
   text: string;
   postedAt: string;
 }
