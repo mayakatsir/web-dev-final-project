@@ -14,16 +14,21 @@ class CommentRepository {
         return await commentModel.find().select('-__v');
     }
 
-    async getCommentsByPostId(postId: string) {
-        const comments = await commentModel.find({ postId }).lean();
+    async getCommentsByPostId(postId: string, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        const [comments, total] = await Promise.all([
+            commentModel.find({ postId }).sort({ postedAt: 1 }).skip(skip).limit(limit).lean(),
+            commentModel.countDocuments({ postId }),
+        ]);
         const senderIds = [...new Set(comments.map((c) => c.sender))];
         const objectIdSenderIds = senderIds.filter((id) => /^[0-9a-fA-F]{24}$/.test(id));
         const users = await userModel.find({ _id: { $in: objectIdSenderIds } }).select('name username avatarUrl').lean();
         const userMap = new Map(users.map((u) => [String(u._id), { name: u.name || u.username, avatarUrl: u.avatarUrl ?? '' }]));
-        return comments.map((c) => {
+        const mapped = comments.map((c) => {
             const userData = userMap.get(c.sender);
             return { ...c, senderName: userData?.name ?? c.sender, senderAvatar: userData?.avatarUrl ?? '' };
         });
+        return { comments: mapped, total, hasMore: skip + mapped.length < total };
     }
 
     async getCommentById(id: string) {

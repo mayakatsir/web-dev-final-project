@@ -116,11 +116,16 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<'mine' | 'favorites'>('mine');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [favorites, setFavorites] = useState<Recipe[]>([]);
+  const [myTotal, setMyTotal] = useState(0);
+  const [favTotal, setFavTotal] = useState(0);
+  const [myPage, setMyPage] = useState(1);
+  const [favPage, setFavPage] = useState(1);
+  const [myHasMore, setMyHasMore] = useState(false);
+  const [favHasMore, setFavHasMore] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -132,22 +137,47 @@ export default function ProfilePage() {
   const [aiResultOpen, setAiResultOpen] = useState(false);
   const [aiError, setAiError] = useState('');
 
-  const activeList = tab === 'mine' ? recipes : favorites;
-  const hasMore = visibleCount < activeList.length;
+  const hasMore = tab === 'mine' ? myHasMore : favHasMore;
 
   useEffect(() => {
     if (!user) return;
     setPageLoading(true);
-    Promise.all([fetchUserPosts(user._id), fetchLikedPosts(user._id)]).then(([posts, liked]) => {
-      setRecipes(posts);
-      setFavorites(liked);
-      setPageLoading(false);
-    });
+    setMyPage(1);
+    setFavPage(1);
+    setRecipes([]);
+    setFavorites([]);
   }, [user?._id]);
 
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [tab]);
+    if (!user) return;
+    let cancelled = false;
+    setLoading(true);
+    fetchUserPosts(user._id, myPage)
+      .then(({ recipes: posts, total, hasMore: more }) => {
+        if (cancelled) return;
+        setRecipes((prev) => myPage === 1 ? posts : [...prev, ...posts]);
+        setMyTotal(total);
+        setMyHasMore(more);
+        if (myPage === 1) setPageLoading(false);
+      })
+      .catch(console.error)
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [myPage, user?._id]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetchLikedPosts(user._id, favPage)
+      .then(({ recipes: posts, total, hasMore: more }) => {
+        if (cancelled) return;
+        setFavorites((prev) => favPage === 1 ? posts : [...prev, ...posts]);
+        setFavTotal(total);
+        setFavHasMore(more);
+      })
+      .catch(console.error);
+    return () => { cancelled = true; };
+  }, [favPage, user?._id]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -155,18 +185,15 @@ export default function ProfilePage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          setLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, activeList.length));
-            setLoading(false);
-          }, 600);
+          if (tab === 'mine') setMyPage((p) => p + 1);
+          else setFavPage((p) => p + 1);
         }
       },
       { threshold: 0.1 },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loading, activeList.length]);
+  }, [hasMore, loading, tab]);
 
   if (!user) return null;
 
@@ -229,7 +256,7 @@ export default function ProfilePage() {
     setDeletingRecipe(null);
   }
 
-  const visibleRecipes = activeList.slice(0, visibleCount);
+  const activeList = tab === 'mine' ? recipes : favorites;
 
   return (
     <Container maxWidth="md" sx={{ pb: 6 }}>
@@ -273,8 +300,8 @@ export default function ProfilePage() {
       {/* Stats */}
       <Box sx={styles.statsBox}>
         {[
-          { value: recipes.length, label: 'Recipes' },
-          { value: favorites.length, label: 'Favorites' },
+          { value: myTotal, label: 'Recipes' },
+          { value: favTotal, label: 'Favorites' },
         ].map((stat, i) => (
           <Box key={stat.label} sx={{ display: 'flex' }}>
             {i > 0 && <Box sx={{ width: '1px', bgcolor: 'divider' }} />}
@@ -314,7 +341,7 @@ export default function ProfilePage() {
               size="small"
               startIcon={aiLoading ? <CircularProgress size={14} color="inherit" /> : <AutoAwesomeRoundedIcon />}
               onClick={() => setMealDialogOpen(true)}
-              disabled={aiLoading || favorites.length === 0}
+              disabled={aiLoading || favTotal === 0}
               sx={{ px: 2, borderRadius: 50, fontFamily: "'Fredoka One', cursive", letterSpacing: 0.5, fontWeight: 400 }}
             >
               {aiLoading ? 'Generating...' : 'Inspire Me!'}
@@ -326,7 +353,7 @@ export default function ProfilePage() {
       {/* Content */}
       {pageLoading ? (
         <Box sx={styles.loadingBox}><CircularProgress sx={{ color: 'primary.main' }} /></Box>
-      ) : visibleRecipes.length === 0 ? (
+      ) : activeList.length === 0 ? (
         <Box sx={styles.emptyBox}>
           <Typography sx={{ fontSize: 36, mb: 1 }}>{tab === 'mine' ? '👨‍🍳' : '🤍'}</Typography>
           <Typography variant="body2" color="text.disabled" sx={styles.emptyText}>
@@ -340,7 +367,7 @@ export default function ProfilePage() {
         </Box>
       ) : (
         <Grid container spacing={2} sx={styles.recipeGrid}>
-          {visibleRecipes.map((recipe, i) => (
+          {activeList.map((recipe, i) => (
             <Grid key={`${recipe.id}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
               <RecipeCard
                 recipe={recipe}
@@ -356,7 +383,7 @@ export default function ProfilePage() {
       {/* Sentinel */}
       <Box ref={sentinelRef} sx={styles.sentinel}>
         {loading && <CircularProgress size={26} sx={{ color: 'primary.main' }} />}
-        {!hasMore && !loading && !pageLoading && visibleRecipes.length > 0 && (
+        {!hasMore && !loading && !pageLoading && activeList.length > 0 && (
           <Typography variant="caption" color="text.disabled">All loaded ✓</Typography>
         )}
       </Box>

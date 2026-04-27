@@ -24,11 +24,14 @@ function mapComment(raw: Record<string, unknown>): Comment {
   };
 }
 
-export async function fetchComments(postId: string): Promise<Comment[]> {
-  const res = await fetch(`${BASE_URL}/comment/post/${postId}`);
+export async function fetchComments(postId: string, page = 1, limit = 10): Promise<{ comments: Comment[]; hasMore: boolean }> {
+  const res = await fetch(`${BASE_URL}/comment/post/${postId}?page=${page}&limit=${limit}`);
   if (!res.ok) throw new Error('Failed to fetch comments');
   const data = await res.json();
-  return (data.comments as Record<string, unknown>[]).map(mapComment);
+  return {
+    comments: (data.comments as Record<string, unknown>[]).map(mapComment),
+    hasMore: data.hasMore ?? false,
+  };
 }
 
 export async function createComment(

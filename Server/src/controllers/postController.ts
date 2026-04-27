@@ -59,9 +59,13 @@ class PostController {
     res: Response,
   ) {
     try {
-      res.status(200).send({ posts: await PostRepository.getAllPosts(req.query) });
+      const page = parseInt(req.query.page ?? '1', 10);
+      const limit = parseInt(req.query.limit ?? '6', 10);
+      const result = await PostRepository.getAllPosts(req.query, page, limit);
+      res.status(200).send(result);
     } catch (err) {
       console.error('Failed getting all posts', err);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 
@@ -146,11 +150,14 @@ class PostController {
   async getLikedPosts(req: Request, res: Response) {
     try {
       const { userId } = req.params;
+      const query = req.query as Record<string, string>;
+      const page = parseInt(query.page ?? '1', 10);
+      const limit = parseInt(query.limit ?? '9', 10);
       if (!isValidObjectId(userId)) {
         return res.status(400).json({ message: `Invalid userId: ${userId}` });
       }
-      const posts = await PostRepository.getLikedPosts(userId);
-      return res.status(200).json({ posts });
+      const result = await PostRepository.getLikedPosts(userId, page, limit);
+      return res.status(200).json(result);
     } catch (err) {
       console.error('Error getting liked posts', err);
       return res.status(500).json({ message: 'Internal server error' });

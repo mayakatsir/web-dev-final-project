@@ -54,7 +54,8 @@ export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -62,39 +63,47 @@ export default function HomePage() {
   const [aiAnswer, setAiAnswer] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const hasMore = visibleCount < recipes.length;
+  useEffect(() => {
+    setPage(1);
+    setRecipes([]);
+    setHasMore(false);
+  }, [user?._id]);
 
   useEffect(() => {
-    fetchAllPosts()
-      .then((posts) => {
-        setRecipes(posts.slice().sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()));
+    let cancelled = false;
+    if (page === 1) setPageLoading(true);
+    else setLoading(true);
+    fetchAllPosts(page)
+      .then(({ recipes: newPosts, hasMore: more }) => {
+        if (cancelled) return;
         const uid = user?._id ?? '';
-        setLikes(new Set(posts.filter((p) => uid && p.likedBy.includes(uid)).map((p) => p.id)));
+        setRecipes((prev) => page === 1 ? newPosts : [...prev, ...newPosts]);
+        setLikes((prev) => {
+          const next = page === 1 ? new Set<string>() : new Set(prev);
+          newPosts.filter((p) => uid && p.likedBy.includes(uid)).forEach((p) => next.add(p.id));
+          return next;
+        });
+        setHasMore(more);
       })
       .catch(console.error)
-      .finally(() => setPageLoading(false));
-  }, [user?._id]);
+      .finally(() => { if (!cancelled) { setPageLoading(false); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, [page, user?._id]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          setLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, recipes.length));
-            setLoading(false);
-          }, 600);
+          setPage((prev) => prev + 1);
         }
       },
       { threshold: 0.1 },
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loading, recipes.length]);
+  }, [hasMore, loading]);
 
   function toggleLike(recipeId: string) {
     const alreadyLiked = likes.has(recipeId);
@@ -160,7 +169,7 @@ export default function HomePage() {
         </Box>
       ) : (
         <Box sx={styles.feedList}>
-          {recipes.slice(0, visibleCount).map((recipe) => (
+          {recipes.map((recipe) => (
             <RecipeFeedCard
               key={recipe.id}
               recipe={recipe}

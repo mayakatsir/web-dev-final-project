@@ -90,13 +90,16 @@ class CommentController {
     async getCommentsByPostId(req: Request, res: Response) {
         try {
             const { postId } = req.params;
+            const query = req.query as Record<string, string>;
+            const page = parseInt(query.page ?? '1', 10);
+            const limit = parseInt(query.limit ?? '10', 10);
 
             if (!isValidObjectId(postId)) {
                 return res.status(400).json({ message: `Invalid postId: ${postId} param` });
             }
 
-            const comments = await commentRepository.getCommentsByPostId(postId);
-            return res.status(200).json({ comments });
+            const result = await commentRepository.getCommentsByPostId(postId, page, limit);
+            return res.status(200).json(result);
         } catch (err) {
             console.error('Error getting comments by post id', err);
             return res.status(500).json({ message: 'Internal server error' });
