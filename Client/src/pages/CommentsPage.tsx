@@ -1,20 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Typography from '@mui/material/Typography';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { Comment } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { createComment, fetchComments } from '../api/commentsApi';
+import CommentItem from '../components/CommentItem';
+import CommentInput from '../components/CommentInput';
 
 const styles = {
   container: { py: 3, display: 'flex', flexDirection: 'column', minHeight: 'calc(100svh - 60px)' },
@@ -23,25 +20,6 @@ const styles = {
   loadingBox: { display: 'flex', justifyContent: 'center', py: 8, flex: 1 },
   commentList: { flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 },
   emptyBox: { textAlign: 'center', py: 6 },
-  commentRow: { display: 'flex', gap: 1.5, alignItems: 'flex-start' },
-  stickyInput: {
-    position: 'sticky',
-    bottom: 0,
-    bgcolor: 'background.paper',
-    pt: 1.5,
-    pb: 2,
-    borderTop: '1px solid',
-    borderColor: 'divider',
-    display: 'flex',
-    gap: 1.25,
-    alignItems: 'center',
-  },
-  outlinedInput: {
-    borderRadius: 50,
-    fontSize: 13.5,
-    bgcolor: 'grey.50',
-    '& fieldset': { borderColor: 'divider' },
-  },
 } satisfies Record<string, SxProps<Theme>>;
 
 export default function CommentsPage() {
@@ -107,11 +85,7 @@ export default function CommentsPage() {
 
   return (
     <Container maxWidth="sm" sx={styles.container}>
-      <Button
-        startIcon={<ArrowBackRoundedIcon />}
-        onClick={() => navigate(-1)}
-        sx={styles.backButton}
-      >
+      <Button startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate(-1)} sx={styles.backButton}>
         Back
       </Button>
 
@@ -133,43 +107,14 @@ export default function CommentsPage() {
               </Typography>
             </Box>
           )}
-
-          {comments.map((c) => {
-            const isMe = c.authorId === user?._id;
-            return (
-              <Box key={c.id} sx={styles.commentRow}>
-                <Avatar
-                  src={isMe ? user?.avatarUrl : c.authorAvatar}
-                  sx={{ width: 34, height: 34, mt: 0.25, flexShrink: 0 }}
-                />
-                <Box
-                  sx={{
-                    flex: 1,
-                    bgcolor: isMe ? 'rgba(232,99,26,0.07)' : 'grey.100',
-                    borderRadius: 2.5,
-                    borderTopLeftRadius: 4,
-                    px: 1.75,
-                    py: 1.1,
-                    borderLeft: isMe ? '3px solid' : 'none',
-                    borderColor: 'primary.light',
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    fontWeight={700}
-                    display="block"
-                    color={isMe ? 'primary.dark' : 'text.primary'}
-                    sx={{ mb: 0.25 }}
-                  >
-                    {c.authorName}
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: 13.5, lineHeight: 1.5 }}>
-                    {c.text}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
+          {comments.map((c) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              currentUserId={user?._id}
+              currentUserAvatarUrl={user?.avatarUrl}
+            />
+          ))}
         </Box>
       )}
 
@@ -177,42 +122,14 @@ export default function CommentsPage() {
         {hasMore && loading && <CircularProgress size={22} sx={{ color: 'primary.main' }} />}
       </Box>
 
-      <Box sx={styles.stickyInput}>
-        <Avatar
-          src={user?.avatarUrl}
-          alt={user?.name ?? user?.username}
-          sx={{ width: 34, height: 34, flexShrink: 0 }}
-        />
-        <OutlinedInput
-          fullWidth
-          size="small"
-          placeholder="Write a comment…"
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-          sx={styles.outlinedInput}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                size="small"
-                onClick={handleSubmit}
-                disabled={!commentText.trim() || submitting}
-                edge="end"
-                sx={{
-                  color: commentText.trim() ? 'primary.main' : 'text.disabled',
-                  transition: 'color 0.15s',
-                }}
-              >
-                {submitting ? (
-                  <CircularProgress size={16} sx={{ color: 'primary.main' }} />
-                ) : (
-                  <SendRoundedIcon fontSize="small" />
-                )}
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </Box>
+      <CommentInput
+        value={commentText}
+        onChange={setCommentText}
+        onSubmit={handleSubmit}
+        submitting={submitting}
+        userAvatarUrl={user?.avatarUrl}
+        userName={user?.name ?? user?.username}
+      />
     </Container>
   );
 }

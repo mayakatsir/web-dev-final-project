@@ -12,8 +12,7 @@ import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
 import { useAuth } from '../context/AuthContext';
 import RecipeFeedCard from '../components/RecipeFeedCard';
 import AIAnswerRenderer from '../components/AIAnswerRenderer';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
+import { recommendRecipe } from '../api/askAIApi';
 
 const styles = {
   heading: { mb: 3, fontSize: { xs: 22, sm: 26 } },
@@ -131,13 +130,8 @@ export default function HomePage() {
     setAiLoading(true);
     setAiAnswer('');
     try {
-      const res = await fetch(`${BASE_URL}/ask-ai/recommend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients: ingredients.trim() }),
-      });
-      const data = await res.json();
-      setAiAnswer(data.answer ?? 'No response received.');
+      const answer = await recommendRecipe(ingredients.trim());
+      setAiAnswer(answer);
     } catch {
       setAiAnswer('Failed to get a recommendation. Please try again.');
     } finally {

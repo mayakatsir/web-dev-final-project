@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   Box,
   Card,
@@ -17,6 +18,9 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AvatarPicker from '../components/AvatarPicker';
+
+type SignInData = { username: string; password: string };
+type RegisterData = { username: string; email: string; password: string; confirmPassword: string };
 
 const styles = {
   root: {
@@ -74,63 +78,52 @@ const styles = {
 } satisfies Record<string, SxProps<Theme>>;
 
 export default function LoginPage() {
-  const { login, register, googleLogin } = useAuth();
+  const { login, register: authRegister, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const [siUsername, setSiUsername] = useState('');
-  const [siPassword, setSiPassword] = useState('');
-
-  const [regUsername, setRegUsername] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirm, setRegConfirm] = useState('');
+  const [serverError, setServerError] = useState('');
   const [regAvatar, setRegAvatar] = useState<File | undefined>(undefined);
   const [regAvatarPreview, setRegAvatarPreview] = useState('');
 
-  async function handleSignIn(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
+  const signInForm = useForm<SignInData>();
+  const registerForm = useForm<RegisterData>();
+
+  async function handleSignIn(data: SignInData) {
+    setServerError('');
     setLoading(true);
     try {
-      await login(siUsername, siPassword);
+      await login(data.username, data.password);
       navigate('/');
     } catch (err: any) {
-      setError(err.message ?? 'Login failed');
+      setServerError(err.message ?? 'Login failed');
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    if (regPassword !== regConfirm) {
-      setError('Passwords do not match');
-      return;
-    }
+  async function handleRegister(data: RegisterData) {
+    setServerError('');
     setLoading(true);
     try {
-      await register(regUsername, regEmail, regPassword, regAvatar);
+      await authRegister(data.username, data.email, data.password, regAvatar);
       navigate('/');
     } catch (err: any) {
-      setError(err.message ?? 'Registration failed');
+      setServerError(err.message ?? 'Registration failed');
     } finally {
       setLoading(false);
     }
   }
 
   async function handleGoogle(credential: string) {
-    setError('');
+    setServerError('');
     setLoading(true);
     try {
       await googleLogin(credential);
       navigate('/');
     } catch (err: any) {
-      setError(err.message ?? 'Google login failed');
+      setServerError(err.message ?? 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -145,7 +138,7 @@ export default function LoginPage() {
 
           <Tabs
             value={tab}
-            onChange={(_, v) => { setTab(v); setError(''); }}
+            onChange={(_, v) => { setTab(v); setServerError(''); }}
             variant="fullWidth"
             sx={styles.tabs}
           >
@@ -153,84 +146,83 @@ export default function LoginPage() {
             <Tab label="Register" />
           </Tabs>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
 
           {tab === 0 && (
-            <Box component="form" onSubmit={handleSignIn} sx={styles.form}>
+            <Box component="form" onSubmit={signInForm.handleSubmit(handleSignIn)} sx={styles.form}>
               <TextField
                 label="Username"
-                value={siUsername}
-                onChange={(e) => setSiUsername(e.target.value)}
-                required
+                {...signInForm.register('username', { required: 'Username is required' })}
+                error={!!signInForm.formState.errors.username}
+                helperText={signInForm.formState.errors.username?.message}
                 fullWidth
                 autoFocus
               />
               <TextField
                 label="Password"
                 type="password"
-                value={siPassword}
-                onChange={(e) => setSiPassword(e.target.value)}
-                required
+                {...signInForm.register('password', { required: 'Password is required' })}
+                error={!!signInForm.formState.errors.password}
+                helperText={signInForm.formState.errors.password?.message}
                 fullWidth
               />
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={loading}
-                sx={styles.submitBtn}
-              >
+              <Button type="submit" variant="contained" fullWidth disabled={loading} sx={styles.submitBtn}>
                 {loading ? <CircularProgress size={22} color="inherit" /> : 'Sign In'}
               </Button>
             </Box>
           )}
 
           {tab === 1 && (
-            <Box component="form" onSubmit={handleRegister} sx={styles.form}>
+            <Box component="form" onSubmit={registerForm.handleSubmit(handleRegister)} sx={styles.form}>
               <AvatarPicker
                 preview={regAvatarPreview}
                 onChange={(file, url) => { setRegAvatar(file); setRegAvatarPreview(url); }}
               />
-
               <TextField
                 label="Username"
-                value={regUsername}
-                onChange={(e) => setRegUsername(e.target.value)}
-                required
+                {...registerForm.register('username', {
+                  required: 'Username is required',
+                  minLength: { value: 3, message: 'At least 3 characters' },
+                })}
+                error={!!registerForm.formState.errors.username}
+                helperText={registerForm.formState.errors.username?.message}
                 fullWidth
                 autoFocus
               />
               <TextField
                 label="Email"
                 type="email"
-                value={regEmail}
-                onChange={(e) => setRegEmail(e.target.value)}
-                required
+                {...registerForm.register('email', {
+                  required: 'Email is required',
+                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email address' },
+                })}
+                error={!!registerForm.formState.errors.email}
+                helperText={registerForm.formState.errors.email?.message}
                 fullWidth
               />
               <TextField
                 label="Password"
                 type="password"
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-                required
+                {...registerForm.register('password', {
+                  required: 'Password is required',
+                  minLength: { value: 6, message: 'At least 6 characters' },
+                })}
+                error={!!registerForm.formState.errors.password}
+                helperText={registerForm.formState.errors.password?.message}
                 fullWidth
               />
               <TextField
                 label="Confirm Password"
                 type="password"
-                value={regConfirm}
-                onChange={(e) => setRegConfirm(e.target.value)}
-                required
+                {...registerForm.register('confirmPassword', {
+                  required: 'Please confirm your password',
+                  validate: (val) => val === registerForm.watch('password') || 'Passwords do not match',
+                })}
+                error={!!registerForm.formState.errors.confirmPassword}
+                helperText={registerForm.formState.errors.confirmPassword?.message}
                 fullWidth
               />
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={loading}
-                sx={styles.submitBtn}
-              >
+              <Button type="submit" variant="contained" fullWidth disabled={loading} sx={styles.submitBtn}>
                 {loading ? <CircularProgress size={22} color="inherit" /> : 'Create Account'}
               </Button>
             </Box>
@@ -241,7 +233,7 @@ export default function LoginPage() {
           <Box sx={styles.googleWrapper}>
             <GoogleLogin
               onSuccess={(res) => res.credential && handleGoogle(res.credential)}
-              onError={() => setError('Google login failed')}
+              onError={() => setServerError('Google login failed')}
               shape="pill"
               size="large"
             />
