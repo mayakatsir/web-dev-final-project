@@ -36,7 +36,7 @@ const main  = async () => {
             version: '1.0.0',
             description: 'Maya & Karen\'s REST server including authentication using JWT',
         },
-        servers: [{ url: 'http://localhost:3000' }],
+        servers: [{ url: 'https://node60.cs.colman.ac.il' }],
     },
     apis: ['./src/docs/*.ts'],
   };
