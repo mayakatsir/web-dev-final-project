@@ -57,12 +57,10 @@ export default function Navbar() {
       sx={styles.appBar}
     >
       <Toolbar sx={styles.toolbar}>
-        {/* Logo — clickable, takes user to feed */}
         <Typography sx={{ ...styles.logo, cursor: 'pointer' }} onClick={() => navigate('/')}>
           EATing
         </Typography>
 
-        {/* Nav links — centered absolutely */}
         <Box sx={{
           position: 'absolute',
           left: '50%',
@@ -100,7 +98,6 @@ export default function Navbar() {
           ))}
         </Box>
 
-        {/* Right side — avatar + logout */}
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <NavLink to="/profile" style={{ textDecoration: 'none', display: 'flex' }}>
             <Avatar
@@ -110,7 +107,6 @@ export default function Navbar() {
             />
           </NavLink>
 
-          {/* Logout */}
           <Tooltip title="Logout">
             <IconButton size="small" onClick={handleLogout} sx={{ color: 'text.secondary' }}>
               <LogoutRoundedIcon fontSize="small" />

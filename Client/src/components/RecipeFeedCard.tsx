@@ -11,7 +11,7 @@ import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineR
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { Recipe, User } from '../types'; // User kept for optional author prop
+import type { Recipe, User } from '../types';
 
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=600&h=400&fit=crop';
@@ -90,7 +90,6 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
 
   return (
     <Card>
-      {/* Author row */}
       <Box sx={styles.authorRow}>
         <Avatar src={avatarSrc} alt={displayName} sx={{ width: 42, height: 42 }} />
         <Box sx={styles.authorBox}>
@@ -112,7 +111,6 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
         )}
       </Box>
 
-      {/* Image */}
       <CardMedia
         component="img"
         image={recipe.imageUrl || FALLBACK_IMAGE}
@@ -120,7 +118,6 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
         sx={styles.cardImage}
       />
 
-      {/* Like / comment actions */}
       <Box sx={styles.actionsRow}>
         <Button
           size="small"
@@ -154,7 +151,6 @@ export default function RecipeFeedCard({ recipe, author, commentCount, liked, on
         </Button>
       </Box>
 
-      {/* Title + description + meta */}
       <Box sx={styles.contentBox}>
         <Typography variant="h6" sx={styles.title}>
           {recipe.title}

@@ -155,7 +155,6 @@ export default function EditRecipeModal({ open, recipe, onClose, onSave }: Props
 
       <DialogContent>
         <Box sx={styles.fields}>
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"

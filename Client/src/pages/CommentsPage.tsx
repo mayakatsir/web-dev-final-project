@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -53,14 +53,39 @@ export default function CommentsPage() {
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) return;
-    fetchComments(id)
-      .then(setComments)
+    let cancelled = false;
+    if (page === 1) setLoading(true);
+    fetchComments(id, page)
+      .then(({ comments: newComments, hasMore: more }) => {
+        if (cancelled) return;
+        setComments((prev) => page === 1 ? newComments : [...prev, ...newComments]);
+        setHasMore(more);
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [id]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [id, page]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !submitting) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, submitting]);
 
   async function handleSubmit() {
     const trimmed = commentText.trim();
@@ -82,7 +107,6 @@ export default function CommentsPage() {
 
   return (
     <Container maxWidth="sm" sx={styles.container}>
-      {/* Back */}
       <Button
         startIcon={<ArrowBackRoundedIcon />}
         onClick={() => navigate(-1)}
@@ -91,12 +115,10 @@ export default function CommentsPage() {
         Back
       </Button>
 
-      {/* Header */}
       <Typography variant="h6" sx={styles.heading}>
         {loading ? 'Comments' : `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}`}
       </Typography>
 
-      {/* Comment list */}
       {loading ? (
         <Box sx={styles.loadingBox}>
           <CircularProgress size={28} sx={{ color: 'primary.main' }} />
@@ -151,7 +173,10 @@ export default function CommentsPage() {
         </Box>
       )}
 
-      {/* Sticky comment input */}
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+        {hasMore && loading && <CircularProgress size={22} sx={{ color: 'primary.main' }} />}
+      </Box>
+
       <Box sx={styles.stickyInput}>
         <Avatar
           src={user?.avatarUrl}

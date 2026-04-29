@@ -46,16 +46,16 @@ function toRecipe(post: ServerPost): Recipe {
   };
 }
 
-export async function fetchAllPosts(): Promise<Recipe[]> {
-  const res = await fetch(`${BASE_URL}/post`);
+export async function fetchAllPosts(page = 1, limit = 6): Promise<{ recipes: Recipe[]; hasMore: boolean }> {
+  const res = await fetch(`${BASE_URL}/post?page=${page}&limit=${limit}`);
   const data = await res.json();
-  return (data.posts as ServerPost[]).map(toRecipe);
+  return { recipes: (data.posts as ServerPost[]).map(toRecipe), hasMore: data.hasMore ?? false };
 }
 
-export async function fetchUserPosts(senderId: string): Promise<Recipe[]> {
-  const res = await fetch(`${BASE_URL}/post?sender=${encodeURIComponent(senderId)}`);
+export async function fetchUserPosts(senderId: string, page = 1, limit = 9): Promise<{ recipes: Recipe[]; total: number; hasMore: boolean }> {
+  const res = await fetch(`${BASE_URL}/post?sender=${encodeURIComponent(senderId)}&page=${page}&limit=${limit}`);
   const data = await res.json();
-  return (data.posts as ServerPost[]).map(toRecipe);
+  return { recipes: (data.posts as ServerPost[]).map(toRecipe), total: data.total ?? 0, hasMore: data.hasMore ?? false };
 }
 
 type PostFields = Pick<Recipe, 'title' | 'description' | 'imageUrl' | 'category' | 'cookingTime' | 'difficulty'>;
@@ -108,10 +108,10 @@ export async function deletePost(id: string): Promise<void> {
   await fetch(`${BASE_URL}/post/${id}`, { method: 'DELETE' });
 }
 
-export async function fetchLikedPosts(userId: string): Promise<Recipe[]> {
-  const res = await fetch(`${BASE_URL}/post/liked/${encodeURIComponent(userId)}`);
+export async function fetchLikedPosts(userId: string, page = 1, limit = 9): Promise<{ recipes: Recipe[]; total: number; hasMore: boolean }> {
+  const res = await fetch(`${BASE_URL}/post/liked/${encodeURIComponent(userId)}?page=${page}&limit=${limit}`);
   const data = await res.json();
-  return (data.posts as ServerPost[]).map(toRecipe);
+  return { recipes: (data.posts as ServerPost[]).map(toRecipe), total: data.total ?? 0, hasMore: data.hasMore ?? false };
 }
 
 export async function likePost(postId: string, userId: string): Promise<void> {

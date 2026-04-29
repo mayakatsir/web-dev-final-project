@@ -22,25 +22,33 @@ class PostRepository {
     return await postModel.findById(id).select('-__v');
   }
 
-  async getAllPosts(query: Record<string, string | undefined>) {
+  async getAllPosts(query: Record<string, string | undefined>, page = 1, limit = 6) {
     const filters: FilterQuery<Post> = {};
 
     if ('sender' in query) {
       filters.sender = query.sender;
     }
 
-    const posts = await postModel.find(filters).select('-__v').lean();
+    const skip = (page - 1) * limit;
+    const [posts, total] = await Promise.all([
+      postModel.find(filters).sort({ postedAt: -1 }).skip(skip).limit(limit).select('-__v').lean(),
+      postModel.countDocuments(filters),
+    ]);
 
     const senderIds = [...new Set(posts.map((p) => p.sender))];
     const users = await userModel.find({ _id: { $in: senderIds } }).select('username name avatarUrl').lean();
     const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
 
-    return posts.map((p) => ({
-      ...p,
-      senderUsername: userMap[p.sender]?.username ?? p.sender,
-      senderName: userMap[p.sender]?.name ?? '',
-      senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
-    }));
+    return {
+      posts: posts.map((p) => ({
+        ...p,
+        senderUsername: userMap[p.sender]?.username ?? p.sender,
+        senderName: userMap[p.sender]?.name ?? '',
+        senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
+      })),
+      total,
+      hasMore: skip + posts.length < total,
+    };
   }
 
   async updatePost(id: string, updates: Partial<Post>) {
@@ -83,19 +91,31 @@ class PostRepository {
     return posts;
   }
 
-  async getLikedPosts(userId: string) {
+  async getLikedPosts(userId: string, page = 1, limit = 9) {
     const user = await userModel.findById(userId).select('likedPosts').lean();
-    if (!user || !user.likedPosts?.length) return [];
-    const posts = await postModel.find({ _id: { $in: user.likedPosts } }).select('-__v').lean();
+    if (!user || !user.likedPosts?.length) return { posts: [], total: 0, hasMore: false };
+    const total = user.likedPosts.length;
+    const skip = (page - 1) * limit;
+    const posts = await postModel
+      .find({ _id: { $in: user.likedPosts } })
+      .sort({ postedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select('-__v')
+      .lean();
     const senderIds = [...new Set(posts.map((p) => p.sender))];
     const users = await userModel.find({ _id: { $in: senderIds } }).select('username name avatarUrl').lean();
     const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), u]));
-    return posts.map((p) => ({
-      ...p,
-      senderUsername: userMap[p.sender]?.username ?? p.sender,
-      senderName: userMap[p.sender]?.name ?? '',
-      senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
-    }));
+    return {
+      posts: posts.map((p) => ({
+        ...p,
+        senderUsername: userMap[p.sender]?.username ?? p.sender,
+        senderName: userMap[p.sender]?.name ?? '',
+        senderAvatar: userMap[p.sender]?.avatarUrl ?? '',
+      })),
+      total,
+      hasMore: skip + posts.length < total,
+    };
   }
 
   async deletePostById(postId: string) {

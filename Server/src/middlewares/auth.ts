@@ -7,7 +7,6 @@ const config = getConfig();
 export type AuthRequest = Request & { user?: { _id: string } };
 
 const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
-    // Authentication logic here
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ error: "Unauthorized" });

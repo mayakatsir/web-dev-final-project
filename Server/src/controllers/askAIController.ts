@@ -53,13 +53,12 @@ class AskAIController {
             let sourcePosts = await PostRepository.getTopLikedPostsByCategory(userId, mealType, 5);
 
             if (sourcePosts.length === 0) {
-                // No liked posts in this category — fall back to top 5 liked posts overall
-                const allLiked = await PostRepository.getLikedPosts(userId);
+                const { posts: allLiked } = await PostRepository.getLikedPosts(userId, 1, 100);
                 if (allLiked.length === 0) {
                     res.status(400).json({ message: 'User has no liked posts to base a recommendation on' });
                     return;
                 }
-                sourcePosts = allLiked.sort((a, b) => b.likesCount - a.likesCount).slice(0, 5);
+                sourcePosts = allLiked.slice().sort((a, b) => b.likesCount - a.likesCount).slice(0, 5);
             }
 
             const descriptions = sourcePosts

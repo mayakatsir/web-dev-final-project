@@ -11,6 +11,7 @@ import type { Recipe } from '../types';
 import { fetchAllPosts, likePost, unlikePost } from '../api/postsApi';
 import { useAuth } from '../context/AuthContext';
 import RecipeFeedCard from '../components/RecipeFeedCard';
+import AIAnswerRenderer from '../components/AIAnswerRenderer';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
@@ -54,7 +55,8 @@ export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -62,39 +64,47 @@ export default function HomePage() {
   const [aiAnswer, setAiAnswer] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const hasMore = visibleCount < recipes.length;
+  useEffect(() => {
+    setPage(1);
+    setRecipes([]);
+    setHasMore(false);
+  }, [user?._id]);
 
   useEffect(() => {
-    fetchAllPosts()
-      .then((posts) => {
-        setRecipes(posts.slice().sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()));
+    let cancelled = false;
+    if (page === 1) setPageLoading(true);
+    else setLoading(true);
+    fetchAllPosts(page)
+      .then(({ recipes: newPosts, hasMore: more }) => {
+        if (cancelled) return;
         const uid = user?._id ?? '';
-        setLikes(new Set(posts.filter((p) => uid && p.likedBy.includes(uid)).map((p) => p.id)));
+        setRecipes((prev) => page === 1 ? newPosts : [...prev, ...newPosts]);
+        setLikes((prev) => {
+          const next = page === 1 ? new Set<string>() : new Set(prev);
+          newPosts.filter((p) => uid && p.likedBy.includes(uid)).forEach((p) => next.add(p.id));
+          return next;
+        });
+        setHasMore(more);
       })
       .catch(console.error)
-      .finally(() => setPageLoading(false));
-  }, [user?._id]);
+      .finally(() => { if (!cancelled) { setPageLoading(false); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, [page, user?._id]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          setLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, recipes.length));
-            setLoading(false);
-          }, 600);
+          setPage((prev) => prev + 1);
         }
       },
       { threshold: 0.1 },
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loading, recipes.length]);
+  }, [hasMore, loading]);
 
   function toggleLike(recipeId: string) {
     const alreadyLiked = likes.has(recipeId);
@@ -160,7 +170,7 @@ export default function HomePage() {
         </Box>
       ) : (
         <Box sx={styles.feedList}>
-          {recipes.slice(0, visibleCount).map((recipe) => (
+          {recipes.map((recipe) => (
             <RecipeFeedCard
               key={recipe.id}
               recipe={recipe}
@@ -181,9 +191,8 @@ export default function HomePage() {
         )}
       </Box>
 
-      </Box>{/* end feed column */}
+      </Box>
 
-      {/* Sticky grocery → recipe recommendation panel */}
       <Box sx={{ width: 320, flexShrink: 0, position: 'sticky', top: 80, display: { xs: 'none', md: 'block' } }}>
         <Box sx={styles.groceryBox}>
           <Typography sx={styles.groceryHeading}>
@@ -212,79 +221,14 @@ export default function HomePage() {
             {aiLoading ? 'Thinking...' : 'Recommend a Recipe'}
           </Button>
           {aiAnswer && (
-          <Box sx={styles.answer}>
-            {aiAnswer.split('\n').map((line, i) => {
-              const trimmed = line.trim();
-              if (!trimmed) return <Box key={i} sx={{ height: 6 }} />;
-
-              // ## or # headings
-              if (/^#{1,3} /.test(trimmed)) {
-                const text = trimmed.replace(/^#{1,3}\s+/, '');
-                return (
-                  <Typography key={i} sx={{
-                    fontFamily: "'Fredoka One', cursive",
-                    fontWeight: 400,
-                    fontSize: 18,
-                    color: 'primary.main',
-                    mt: 1.5,
-                    mb: 0.5,
-                    letterSpacing: 0.5,
-                  }}>
-                    {text}
-                  </Typography>
-                );
-              }
-
-              // **bold** inline — strip and render bold
-              const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
-              const rendered = parts.map((part, j) =>
-                part.startsWith('**') && part.endsWith('**')
-                  ? <Box key={j} component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>{part.slice(2, -2)}</Box>
-                  : part
-              );
-
-              // Numbered steps
-              if (/^\d+\./.test(trimmed)) {
-                return (
-                  <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'flex-start' }}>
-                    <Box sx={{
-                      minWidth: 22, height: 22, borderRadius: '50%',
-                      bgcolor: 'primary.main', color: '#fff',
-                      fontSize: 11, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      mt: '2px', flexShrink: 0,
-                    }}>
-                      {trimmed.match(/^(\d+)/)?.[1]}
-                    </Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
-                      {rendered.map((p) => typeof p === 'string' ? p.replace(/^\d+\.\s*/, '') : p).filter((_, idx) => idx > 0 || typeof rendered[0] === 'object' || (rendered[0] as string).replace(/^\d+\.\s*/, ''))}
-                    </Typography>
-                  </Box>
-                );
-              }
-
-              // Bullet points
-              if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-                return (
-                  <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5 }}>
-                    <Box component="span" sx={{ color: 'primary.main', fontWeight: 700, mt: '1px' }}>•</Box>
-                    <Typography variant="body2" sx={{ lineHeight: 1.6 }}>{rendered}</Typography>
-                  </Box>
-                );
-              }
-
-              return (
-                <Typography key={i} variant="body2" sx={{ lineHeight: 1.7, mb: 0.25 }}>
-                  {rendered}
-                </Typography>
-              );
-            })}
-          </Box>
+            <Box sx={styles.answer}>
+              <AIAnswerRenderer answer={aiAnswer} />
+            </Box>
           )}
         </Box>
       </Box>
 
-      </Box>{/* end flex row */}
+      </Box>
     </Container>
   );
 }
