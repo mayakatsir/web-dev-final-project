@@ -26,8 +26,7 @@ import ProfileTabs from '../components/ProfileTabs';
 import RecipeViewDialog from '../components/RecipeViewDialog';
 import MealPickerDialog from '../components/MealPickerDialog';
 import AIResultDialog from '../components/AIResultDialog';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
+import { recommendFromFavorites } from '../api/askAIApi';
 
 const BLANK_RECIPE: Recipe = {
   id: '',
@@ -151,16 +150,11 @@ export default function ProfilePage() {
     setAiError('');
     setMealDialogOpen(false);
     try {
-      const res = await fetch(`${BASE_URL}/ask-ai/recommend-from-favorites`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user!._id, mealType: selectedMeal }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setAiError(data.message ?? 'Failed to generate.');
+      const { answer, error } = await recommendFromFavorites(user!._id, selectedMeal);
+      if (error) {
+        setAiError(error);
       } else {
-        setAiAnswer(data.answer ?? 'No response received.');
+        setAiAnswer(answer ?? '');
       }
       setAiResultOpen(true);
     } catch {
