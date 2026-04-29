@@ -27,8 +27,6 @@ import EditProfileModal from '../components/EditProfileModal';
 import EditRecipeModal from '../components/EditRecipeModal';
 import RecipeCard from '../components/RecipeCard';
 
-const PAGE_SIZE = 9;
-
 const BLANK_RECIPE: Recipe = {
   id: '',
   authorId: '',
