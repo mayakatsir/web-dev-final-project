@@ -72,10 +72,7 @@ const styles = {
   description: {
     mb: 1.5,
     lineHeight: 1.55,
-    overflow: 'hidden',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
+    whiteSpace: 'pre-wrap',
   },
   metaRow: { display: 'flex', gap: 1.5, alignItems: 'center' },
   timeRow: { display: 'flex', alignItems: 'center', gap: 0.4 },
