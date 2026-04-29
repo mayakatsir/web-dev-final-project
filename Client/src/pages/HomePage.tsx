@@ -15,8 +15,6 @@ import AIAnswerRenderer from '../components/AIAnswerRenderer';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || window.location.origin;
 
-const PAGE_SIZE = 6;
-
 const styles = {
   heading: { mb: 3, fontSize: { xs: 22, sm: 26 } },
   loadingBox: { display: 'flex', justifyContent: 'center', py: 10 },
