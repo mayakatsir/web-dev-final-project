@@ -178,11 +178,11 @@ export default function ProfilePage() {
     imageFile?: File,
   ) {
     if (id === '') {
-      const newRecipe = await createPost(updated, user._id, imageFile);
+      const newRecipe = await createPost(updated, user!._id, imageFile);
       setRecipes((prev) => [newRecipe, ...prev]);
       setMyTotal((prev) => prev + 1);
     } else {
-      await updatePost(id, updated, user._id, imageFile);
+      await updatePost(id, updated, user!._id, imageFile);
       setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated } : r)));
     }
   }
@@ -192,7 +192,7 @@ export default function ProfilePage() {
     avatarFile?: File,
   ) {
     if (!token) return;
-    const updated = await updateProfileApi(user._id, updates, token, avatarFile);
+    const updated = await updateProfileApi(user!._id, updates, token, avatarFile);
     updateUser(updated);
   }
 
